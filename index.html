@@ -1,131 +1,417 @@
+<!-- ============================================
+     index.html — Abhay Mittal's Portfolio
+     ============================================ -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abhay Mittal — Frontend Developer</title>
+  <meta name="description"
+    content="Abhay Mittal – Frontend Developer, MERN stack learner, and CSE student at SRM KTR. Explore my skills, projects, and get in touch." />
 
+  <!-- Google Fonts: Syne + DM Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Font Awesome 6.4.2 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-    <header class="header">
- <div class="logo-img"><img src="abhay.png" alt=""></div> 
-        <nav>
-            <div class="navbar">
-                <a href="#Home">Home</a> 
-                <a href="#about">About</a> 
-                <a href="projects.html">Projects</a>
-                <a href="#contact">Contacts</a> 
-            </div>
-        </nav>
-    </header>
 
-    <section id="Home">
-<div class="Home-leftright">
- <div>
-    <div class="home-content">
-        <h1 class="heading">Hi, I'm Abhay Mittal</h1><br>
-        <h3>Frontend Developer</h3><br>
-        <p class="subhead">I design and build responsive, user-friendly websites with a focus on clean code and smooth experiences. Currently exploring the MERN stack to expand my skills and create impactful digital solutions.</p> 
-     </div>
+  <!-- ===================== Background Orbs ===================== -->
+  <div class="orb orb--blue"></div>
+  <div class="orb orb--violet"></div>
+  <div class="orb orb--teal"></div>
 
-    <div class="btn">
-        <a href="https://docs.google.com/document/d/1FYkIjayHsdg1EkejM-u04hEPTADiMBX1/edit?usp=drive_link&ouid=107102514758313855202&rtpof=true&sd=true" class="btn1">Resume</a><br>
-        <a href="mailto:abhaymittal3333@gmail.com"class="btn2">Contact Me</a>
+  <!-- ===================== Custom Cursor ===================== -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- ===================== Navigation ===================== -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#hero" class="nav__logo"><img src="abhay.png" alt="Abhay Mittal" class="nav__logo-img" /></a>
+      <ul class="nav__links">
+        <li><a href="#hero" class="nav__link active" data-section="hero">Home</a></li>
+        <li><a href="#about" class="nav__link" data-section="about">About</a></li>
+        <li><a href="#skills" class="nav__link" data-section="skills">Skills</a></li>
+        <li><a href="#projects" class="nav__link" data-section="projects">Projects</a></li>
+        <li><a href="#contact" class="nav__link" data-section="contact">Contact</a></li>
+      </ul>
+      <button class="nav__theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
     </div>
+  </nav>
 
-    <div class="home-left">
-        <a href="https://github.com/Abhay172005"><i class="fa-brands fa-github"></i></a>
-        <a href="https://www.linkedin.com/in/abhaym17/"><i class="fa-brands fa-linkedin"></i></a>
-        <a href="https://x.com/abhaymittal2005"><i class="fa-brands fa-twitter"></i></a>
-        <a href="https://www.instagram.com/abhay_mittal17/"><i class="fa-brands fa-instagram"></i></a>
+  <!-- ===================== Hero Section ===================== -->
+  <section class="hero" id="hero">
+    <div class="hero__bg-grid"></div>
+    <div class="hero__bg-glow"></div>
+    <div class="hero__bg-glow hero__bg-glow--orange"></div>
+    <div class="hero__grid">
 
-        
+      <!-- Left: Text Content -->
+      <div class="hero__text">
+        <span class="hero__label">// Frontend Developer</span>
+        <h1 class="hero__name">
+          Abhay <span class="hero__name--accent">Mittal</span>
+        </h1>
+        <p class="hero__typing">
+          <span id="typedText"></span><span class="hero__cursor">|</span>
+        </p>
+        <p class="hero__bio">
+          I design and build responsive, user-friendly websites with a focus on clean code and smooth experiences. Currently exploring the MERN stack to expand my skills and create impactful digital solutions.
+        </p>
+        <div class="hero__buttons">
+          <a href="https://drive.google.com/file/d/1dTSbfB4AQnZNj7N-iZ6CBIGdVKHu0uFb/view?usp=drive_link"
+            target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+            Resume <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+          <a href="#contact" class="btn btn--outline">Get in touch</a>
         </div>
- </div>
-
-
-<div class="home-image">
-      <img src="undraw_developer-activity_4zqd.svg" alt="Developer Illustration" width="450vh">
-  </div>
-</div>
-    </section>
-
-        
-<section id="about">
-  <h2>About Me</h2>
-  <div class="about-content">
-    <div class="about-image">
-      <img src="undraw_developer-avatar_f6ac.svg" alt="Developer Avatar">
-    </div>
-    <div class="about-text">
-      <h1 style="font-family: cursive;">Hey👋🏻,</h1>
-      <h2  style="font-family: cursive;">I am a Frontend Developer</h2>
-      <p>
-        I am a 2nd-year Computer Science student at SRM Institute of Science and Technology, Kattankulathur (SRM KTR), currently focused on Web Development (MERN stack) and strengthening my skills in Java and frontend. Alongside this, I also have an interest in Artificial Intelligence and Machine Learning, which I plan to explore in the future.
-      </p>
-        <div class="skills">
-    <h3>Skills</h3>
-    <ul>
-      <li>HTML</li>
-      <li>CSS</li>
-      <li>JavaScript</li>
-      <li>Java</li>
-    </ul>
-  </div>
-    </div>
-  </div>
-</section>
-
-<section id="contact">
-    <h1>Contact Me</h1>
-    
-   <div  class="contact-container">
-    <div class="contact-left">
-        <img src="flat-design-illustration-customer-support.png" alt="" width="450px">
-    </div>
-
-    
-        <div class="contact-right">
-      <form action="https://api.web3forms.com/submit" method="POST">
-           <input type="hidden" name="access_key" value="e3c62f77-a9f0-46a3-a5dc-09dc7ef38e08">
-        <input type="text" name="name" placeholder="Your Name" required>
-        <input type="email" name="email" placeholder="Your Email" required>
-        <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-    
-   </div>
-   <footer>
-    <div class="end-container">
-    <div class="owner">
-  <p>Made with ❤️ by Abhay Mittal</p>
-  <p>&copy; 2025 Abhay Mittal. All rights reserved.</p>
-  </div>
-   <div class="end">
-    
-    <a href="mailto:abhaymittal3333@gmail.com">
-  <i class="fa-regular fa-envelope"></i></a>
-        <a href="https://github.com/Abhay172005"><i class="fa-brands fa-github"></i></a>
-        <a href="https://www.linkedin.com/in/abhaym17/"><i class="fa-brands fa-linkedin"></i></a>
-        <a href="https://x.com/abhaymittal2005"><i class="fa-brands fa-twitter"></i></a>
-        <a href="https://www.instagram.com/abhay_mittal17/"><i class="fa-brands fa-instagram"></i></a>
-
-      </div>  
+        <div class="hero__socials">
+          <a href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i
+              class="fa-brands fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/abhaym17/" target="_blank" rel="noopener noreferrer"
+            aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="https://x.com/abhaymittal2005" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i
+              class="fa-brands fa-x-twitter"></i></a>
+          <a href="https://www.instagram.com/abhay_mittal17/" target="_blank" rel="noopener noreferrer"
+            aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
         </div>
-</footer>
+      </div>
 
-</section>
+      <!-- Right: SVG Terminal Illustration -->
+      <div class="hero__illustration">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 340" class="hero-svg"
+          aria-label="Terminal illustration showing developer details">
+          <!-- Terminal Window -->
+          <rect x="0" y="0" width="480" height="340" rx="12" fill="#18181b" stroke="#2a2a2e" stroke-width="1.5" />
+          <!-- Title Bar -->
+          <rect x="0" y="0" width="480" height="36" rx="12" fill="#1e1e22" />
+          <rect x="0" y="12" width="480" height="24" fill="#1e1e22" />
+          <!-- Traffic Lights -->
+          <circle cx="20" cy="18" r="6" fill="#ff5f57" />
+          <circle cx="40" cy="18" r="6" fill="#ffbd2e" />
+          <circle cx="60" cy="18" r="6" fill="#28c840" />
+          <!-- Tab title -->
+          <text x="240" y="22" text-anchor="middle" fill="#888" font-family="DM Mono, monospace"
+            font-size="12">abhay_mittal.js</text>
+          <!-- Code content -->
+          <text x="20" y="68" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">1</text>
+          <text x="45" y="68" fill="#c792ea" font-family="DM Mono, monospace" font-size="13">const</text>
+          <text x="94" y="68" fill="#e8ff47" font-family="DM Mono, monospace" font-size="13">developer</text>
+          <text x="174" y="68" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">=</text>
+          <text x="190" y="68" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">{</text>
 
+          <text x="20" y="96" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">2</text>
+          <text x="65" y="96" fill="#f07178" font-family="DM Mono, monospace" font-size="13">name</text>
+          <text x="102" y="96" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="118" y="96" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"Abhay Mittal"</text>
+          <text x="118" y="124" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"Frontend Developer"</text>
 
+          <text x="20" y="124" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">3</text>
+          <text x="65" y="124" fill="#f07178" font-family="DM Mono, monospace" font-size="13">role</text>
+          <text x="102" y="124" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="118" y="124" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"Frontend
+            Developer"</text>
+          <text x="310" y="124" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
 
-   
+          <text x="20" y="152" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">4</text>
+          <text x="65" y="152" fill="#f07178" font-family="DM Mono, monospace" font-size="13">stack</text>
+          <text x="110" y="152" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="126" y="152" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"MERN"</text>
+          <text x="180" y="152" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
 
-    
-    
+          <text x="20" y="180" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">5</text>
+          <text x="65" y="180" fill="#f07178" font-family="DM Mono, monospace" font-size="13">college</text>
+          <text x="130" y="180" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="146" y="180" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"SRM KTR"</text>
+          <text x="234" y="180" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
+
+          <text x="20" y="208" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">6</text>
+          <text x="65" y="208" fill="#f07178" font-family="DM Mono, monospace" font-size="13">year</text>
+          <text x="102" y="208" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="118" y="208" fill="#f78c6c" font-family="DM Mono, monospace" font-size="13">2</text>
+          <text x="130" y="208" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
+
+          <text x="20" y="236" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">7</text>
+          <text x="65" y="236" fill="#f07178" font-family="DM Mono, monospace" font-size="13">learning</text>
+          <text x="138" y="236" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="154" y="236" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">"Node.js + Express"</text>
+          <text x="344" y="236" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
+
+          <text x="20" y="264" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">8</text>
+          <text x="65" y="264" fill="#f07178" font-family="DM Mono, monospace" font-size="13">available</text>
+          <text x="148" y="264" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">:</text>
+          <text x="164" y="264" fill="#c3e88d" font-family="DM Mono, monospace" font-size="13">true</text>
+          <text x="198" y="264" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">,</text>
+
+          <text x="20" y="292" fill="#6b6b7b" font-family="DM Mono, monospace" font-size="13">9</text>
+          <text x="45" y="292" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">}</text>
+          <text x="56" y="292" fill="#89ddff" font-family="DM Mono, monospace" font-size="13">;</text>
+
+          <!-- Blinking cursor line -->
+          <rect x="68" y="280" width="8" height="16" fill="#e8ff47" opacity="0.7">
+            <animate attributeName="opacity" values="0.7;0;0.7" dur="1.2s" repeatCount="indefinite" />
+          </rect>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <div class="hero__scroll">
+      <div class="hero__scroll-line"></div>
+      <span class="hero__scroll-text">explore</span>
+    </div>
+  </section>
+
+  <!-- ===================== About Section ===================== -->
+  <section class="about" id="about">
+    <div class="about__inner">
+      <div class="about__grid">
+
+        <!-- Left: SVG Illustration -->
+        <div class="about-img-wrapper reveal">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" class="about-svg"
+            aria-label="Developer avatar illustration">
+            <rect x="60" y="370" width="280" height="6" rx="3" fill="#2a2a2e" />
+            <rect x="80" y="280" width="240" height="12" rx="3" fill="#3a3a40" />
+            <rect x="90" y="292" width="8" height="80" rx="2" fill="#2a2a2e" />
+            <rect x="302" y="292" width="8" height="80" rx="2" fill="#2a2a2e" />
+            <rect x="130" y="180" width="140" height="95" rx="6" fill="#18181b" stroke="#3a3a40" stroke-width="2" />
+            <rect x="190" y="275" width="20" height="12" rx="2" fill="#3a3a40" />
+            <rect x="175" y="284" width="50" height="4" rx="2" fill="#3a3a40" />
+            <rect x="142" y="195" width="55" height="4" rx="2" fill="#e8ff47" opacity="0.8" />
+            <rect x="142" y="205" width="80" height="4" rx="2" fill="#c792ea" opacity="0.6" />
+            <rect x="142" y="215" width="40" height="4" rx="2" fill="#c3e88d" opacity="0.7" />
+            <rect x="142" y="225" width="70" height="4" rx="2" fill="#89ddff" opacity="0.6" />
+            <rect x="142" y="235" width="50" height="4" rx="2" fill="#f07178" opacity="0.5" />
+            <rect x="142" y="245" width="90" height="4" rx="2" fill="#ff6b35" opacity="0.6" />
+            <rect x="142" y="255" width="35" height="4" rx="2" fill="#e8ff47" opacity="0.5" />
+            <rect x="150" y="290" width="100" height="24" rx="4" fill="#2a2a2e" stroke="#3a3a40" stroke-width="1" />
+            <rect x="156" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="167" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="178" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="189" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="200" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="211" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="222" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="233" y="295" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="156" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="167" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="178" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="189" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="200" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="211" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="222" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="233" y="304" width="8" height="5" rx="1" fill="#3a3a40" />
+            <rect x="275" y="264" width="22" height="26" rx="4" fill="#3a3a40" stroke="#4a4a50" stroke-width="1" />
+            <path d="M297 270 Q 310 270 310 278 Q 310 286 297 286" fill="none" stroke="#4a4a50" stroke-width="2" />
+            <path d="M280 258 Q 283 248 286 258" fill="none" stroke="#6b6b7b" stroke-width="1.5" opacity="0.5">
+              <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite" />
+            </path>
+            <path d="M288 255 Q 291 245 294 255" fill="none" stroke="#6b6b7b" stroke-width="1.5" opacity="0.4">
+              <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2.5s" repeatCount="indefinite" />
+            </path>
+            <rect x="155" y="340" width="90" height="14" rx="6" fill="#2a2a2e" />
+            <rect x="170" y="354" width="6" height="20" rx="2" fill="#3a3a40" />
+            <rect x="225" y="354" width="6" height="20" rx="2" fill="#3a3a40" />
+            <rect x="155" y="300" width="8" height="40" rx="3" fill="#2a2a2e" />
+            <rect x="237" y="300" width="8" height="40" rx="3" fill="#2a2a2e" />
+            <rect x="155" y="296" width="90" height="8" rx="4" fill="#2a2a2e" />
+            <circle cx="200" cy="175" r="28" fill="#e0c8a8" />
+            <path d="M172 170 Q 172 145 200 145 Q 228 145 228 170" fill="#1a1a1e" />
+            <rect x="172" y="155" width="56" height="15" rx="4" fill="#1a1a1e" />
+            <circle cx="190" cy="178" r="3" fill="#1a1a1e" />
+            <circle cx="210" cy="178" r="3" fill="#1a1a1e" />
+            <rect x="182" y="172" width="16" height="12" rx="3" fill="none" stroke="#4a4a50" stroke-width="1.5" />
+            <rect x="202" y="172" width="16" height="12" rx="3" fill="none" stroke="#4a4a50" stroke-width="1.5" />
+            <line x1="198" y1="178" x2="202" y2="178" stroke="#4a4a50" stroke-width="1.5" />
+            <path d="M193 188 Q 200 194 207 188" fill="none" stroke="#1a1a1e" stroke-width="1.5" />
+            <path
+              d="M175 203 Q 175 230 170 260 L 175 262 Q 200 268 225 262 L 230 260 Q 225 230 225 203 Q 215 198 200 198 Q 185 198 175 203Z"
+              fill="#e8ff47" />
+            <rect x="192" y="200" width="16" height="8" rx="3" fill="#e0c8a8" />
+            <path d="M170 215 Q 155 240 160 268" fill="none" stroke="#e0c8a8" stroke-width="10"
+              stroke-linecap="round" />
+            <path d="M230 215 Q 245 240 240 268" fill="none" stroke="#e0c8a8" stroke-width="10"
+              stroke-linecap="round" />
+            <circle cx="165" cy="272" r="7" fill="#e0c8a8" />
+            <circle cx="235" cy="272" r="7" fill="#e0c8a8" />
+            <rect x="180" y="260" width="16" height="45" rx="4" fill="#2a2a3e" />
+            <rect x="204" y="260" width="16" height="45" rx="4" fill="#2a2a3e" />
+            <rect x="177" y="300" width="22" height="10" rx="5" fill="#1a1a1e" />
+            <rect x="201" y="300" width="22" height="10" rx="5" fill="#1a1a1e" />
+          </svg>
+        </div>
+
+        <!-- Right: Text Content -->
+        <div class="about__text reveal">
+          <h2 class="section__heading">Turning ideas<br />into interfaces.</h2>
+          <p>
+            Hey &mdash; I&rsquo;m Abhay, a second-year Computer Science student at SRM Institute of Science and
+            Technology,
+            Kattankulathur. I got into frontend development because I wanted to make things people could actually use
+            &mdash; not just code that sits in a repo.
+          </p>
+          <p>
+            My foundation is HTML, CSS, and JavaScript, with React as my primary tool for building component-driven UIs.
+            I care about the details &mdash; spacing, transitions, responsiveness, and making interactions feel
+            considered.
+          </p>
+          <p>
+            I&rsquo;m currently extending into backend territory with Node.js and Express, working toward a complete
+            MERN
+            stack skillset. I&rsquo;m deliberate about what I learn and committed to building things that are both
+            functional and well-crafted.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Skills Section ===================== -->
+  <section class="skills section" id="skills">
+    <h2 class="section__heading reveal">Skills &amp; Tools</h2>
+
+    <div class="skills__grid reveal">
+      <div class="skills__row">
+        <span class="skills__label">Frontend</span>
+        <div class="skills__tags">
+          <span class="skill-tag">HTML5</span>
+          <span class="skill-tag">CSS3</span>
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">React</span>
+        </div>
+      </div>
+      <div class="skills__row">
+        <span class="skills__label">Backend</span>
+        <div class="skills__tags">
+          <span class="skill-tag skill-tag--learning">Node.js ✦</span>
+          <span class="skill-tag skill-tag--learning">Express ✦</span>
+          <span class="skill-tag skill-tag--learning">MongoDB ✦</span>
+        </div>
+      </div>
+      <div class="skills__row">
+        <span class="skills__label">Languages</span>
+        <div class="skills__tags">
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">Java</span>
+        </div>
+      </div>
+      <div class="skills__row">
+        <span class="skills__label">Tools</span>
+        <div class="skills__tags">
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">GitHub</span>
+          <span class="skill-tag">VS Code</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="skills__legend reveal">✦ Currently learning</p>
+  </section>
+
+  <!-- ===================== Projects Section ===================== -->
+  <section class="projects section" id="projects">
+    <h2 class="section__heading reveal">Selected work.</h2>
+    <div class="projects__placeholder reveal">
+      <div class="projects__placeholder-inner">
+        <div class="projects__placeholder-line">
+          <span class="projects__blink">|</span>
+          <span>Case studies loading...</span>
+        </div>
+        <span class="projects__placeholder-sub">— currently crafting the work —</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Contact Section ===================== -->
+  <section class="contact section" id="contact">
+    <div class="contact__grid">
+      <div class="contact__info reveal">
+        <h2 class="section__heading">
+          Let&rsquo;s build<br /><span class="accent">something.</span>
+        </h2>
+        <p class="contact__desc">
+          Have a project in mind, want to collaborate, or just say hi? I&rsquo;d love to hear from you &mdash; drop a
+          message
+          or reach out through any of the links below.
+        </p>
+        <ul class="contact__links">
+          <li>
+            <i class="fa-solid fa-envelope"></i>
+            <a href="mailto:abhaymittal3333@gmail.com">abhaymittal3333@gmail.com</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-github"></i>
+            <a href="https://github.com/Abhay172005" target="_blank"
+              rel="noopener noreferrer">github.com/Abhay172005</a>
+          </li>
+          <li>
+            <i class="fa-brands fa-linkedin-in"></i>
+            <a href="https://www.linkedin.com/in/abhaym17/" target="_blank"
+              rel="noopener noreferrer">linkedin.com/in/abhaym17</a>
+          </li>
+        </ul>
+      </div>
+      <div class="contact__form-wrapper reveal">
+        <form action="https://api.web3forms.com/submit" method="POST" class="contact__form" id="contactForm">
+  <input type="hidden" name="access_key" value="e3c62f77-a9f0-46a3-a5dc-09dc7ef38e08" />
+  <input type="checkbox" name="botcheck" style="display:none">
+  <div class="form-group">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" placeholder="Your name" required />
+  </div>
+  <div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" required />
+  </div>
+  <div class="form-group">
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" placeholder="Tell me about your project..."
+      required></textarea>
+  </div>
+  <button type="submit" class="btn btn--primary btn--submit" id="submitBtn">
+    Send message <i class="fa-solid fa-paper-plane"></i>
+  </button>
+  <p class="form-status" id="formStatus"></p>
+</form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <p class="footer__copy">Designed &amp; built by Abhay Mittal · © 2026</p>
+      <div class="footer__socials">
+        <a href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i
+            class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/abhaym17/" target="_blank" rel="noopener noreferrer"
+          aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="https://x.com/abhaymittal2005" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i
+            class="fa-brands fa-x-twitter"></i></a>
+        <a href="https://www.instagram.com/abhay_mittal17/" target="_blank" rel="noopener noreferrer"
+          aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
-</html>
 
- 
+</html>
