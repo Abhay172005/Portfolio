@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume — Abhay Mittal</title>
+  <meta name="description" content="Resume of Abhay Mittal — education, experience, certifications and skills." />
+  <meta name="theme-color" content="#0b0f19" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo" aria-label="Abhay Mittal — home">&lt;AM /&gt;</a>
+      <nav class="nav__links" id="navLinks" aria-label="Primary">
+        <a href="index.html" class="nav__link">Home</a>
+        <a href="projects.html" class="nav__link">Projects</a>
+        <a href="resume.html" class="nav__link is-active" aria-current="page">Resume</a>
+      </nav>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page page--enter">
+
+      <div class="resume__top">
+        <a class="btn btn--primary" href="resume.pdf" target="_blank" rel="noopener noreferrer">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#i-download" /></svg> PDF Resume
+        </a>
+      </div>
+
+      <!-- Education -->
+      <section class="rsec">
+        <div class="section__head">
+          <h2 class="section__title">Education</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="card">
+          <div class="entry__head">
+            <div>
+              <h3 class="entry__title">SRM Institute of Science and Technology</h3>
+              <p class="entry__org">B.Tech in Computer Science and Engineering · CGPA 8.73 / 10</p>
+            </div>
+            <div class="entry__meta">
+              <p class="entry__date">June 2024 — May 2028</p>
+              <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Chennai, India</p>
+            </div>
+          </div>
+          <div class="chips chips--sm">
+            <span class="chip">Data Structures &amp; Algorithms</span>
+            <span class="chip">Object-Oriented Programming</span>
+            <span class="chip">Operating Systems</span>
+            <span class="chip">DBMS</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Experience -->
+      <section class="rsec">
+        <div class="section__head">
+          <h2 class="section__title">Technical Experience</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="timeline">
+          <div class="timeline__item reveal">
+            <div class="card">
+              <div class="entry__head">
+                <div>
+                  <h3 class="entry__title">Deep Learning Intern — Video Deepfake Detection</h3>
+                  <p class="entry__org">Computer Vision &amp; Biometrics Lab (CVBL), IIIT Allahabad</p>
+                </div>
+                <div class="entry__meta">
+                  <p class="entry__date">June 2026</p>
+                  <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Prayagraj, India</p>
+                </div>
+              </div>
+              <ul class="bullets">
+                <li>Built a video-level deepfake detector in PyTorch (<strong>EfficientNet-B0 + GRU</strong>, 5.3M
+                  params) over 8 face crops per video, trained on FaceForensics++ (8,640 videos, 5 manipulation
+                  methods, C23 &amp; C40), reaching <strong>0.91 test ROC-AUC</strong>.</li>
+                <li>Built the preprocessing pipeline with OpenCV YuNet face detection, face tracking, and 224×224 face
+                  cropping, and deployed the model as a React + FastAPI web demo for video inference.</li>
+                <li>Ran robustness experiments with paired C23/C40 fine-tuning and chained degradation augmentation,
+                  raising AUC on JPEG-compressed + downsampled video from <strong>0.745 to 0.794</strong> (single
+                  run).</li>
+                <li>Evaluated on <strong>6,862 unseen DFD videos</strong> and real H.264 re-encoding (CRF 28 &amp; 35)
+                  with bootstrap 95% CIs (2,000 resamples) and a 3-seed study, showing a single-run DFD gain did not
+                  replicate across seeds.</li>
+              </ul>
+              <div class="entry__links">
+                <a href="project.html?p=robust-deepfake-detection"><svg class="icon" viewBox="0 0 24 24"><use href="#i-arrow" /></svg> Project write-up</a>
+                <a href="https://github.com/Abhay172005/robust-deepfake-detection" target="_blank"
+                  rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg> Source</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Certifications -->
+      <section class="rsec">
+        <div class="section__head">
+          <h2 class="section__title">Certifications</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="timeline">
+          <div class="timeline__item reveal">
+            <div class="card">
+              <h3 class="entry__title">Geodata Processing using Python and Machine Learning</h3>
+              <p class="entry__org">ISRO — IIRS · A+ Grade</p>
+            </div>
+          </div>
+          <div class="timeline__item reveal">
+            <div class="card">
+              <h3 class="entry__title">Certified Generative AI Professional · AI Foundations Associate</h3>
+              <p class="entry__org">Oracle Cloud Infrastructure 2025</p>
+            </div>
+          </div>
+          <div class="timeline__item reveal">
+            <div class="card">
+              <h3 class="entry__title">SAP Generative AI Developer</h3>
+              <p class="entry__org">SAP Certified</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activities -->
+      <section class="rsec">
+        <div class="section__head">
+          <h2 class="section__title">Activities</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="timeline">
+          <div class="timeline__item reveal">
+            <div class="card">
+              <div class="entry__head">
+                <div>
+                  <h3 class="entry__title">Corporate Member</h3>
+                  <p class="entry__org">FOSS Club — SRMIST</p>
+                </div>
+                <div class="entry__meta">
+                  <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Chennai, India</p>
+                </div>
+              </div>
+              <ul class="bullets">
+                <li>Participated in <strong>10+</strong> national and university-level hackathons, building prototypes
+                  in cross-functional teams.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Skills -->
+      <section class="rsec">
+        <div class="section__head">
+          <h2 class="section__title">Technical Skills</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="skillgrid">
+          <div>
+            <h3 class="skillgrid__label">Languages</h3>
+            <div class="chips chips--sm">
+              <span class="chip">Python</span><span class="chip">Java</span><span class="chip">JavaScript</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="skillgrid__label">AI / ML</h3>
+            <div class="chips chips--sm">
+              <span class="chip">PyTorch</span><span class="chip">OpenCV</span><span class="chip">NumPy</span><span
+                class="chip">YOLOv8</span><span class="chip">CNNs</span><span class="chip">GRU</span><span
+                class="chip">Computer Vision</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="skillgrid__label">Frontend</h3>
+            <div class="chips chips--sm">
+              <span class="chip">React.js</span><span class="chip">HTML</span><span class="chip">CSS</span><span
+                class="chip">Tailwind CSS</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="skillgrid__label">Backend</h3>
+            <div class="chips chips--sm">
+              <span class="chip">Node.js</span><span class="chip">Express.js</span><span class="chip">Supabase</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="skillgrid__label">Databases</h3>
+            <div class="chips chips--sm">
+              <span class="chip">PostgreSQL</span><span class="chip">MongoDB</span>
+            </div>
+          </div>
+          <div>
+            <h3 class="skillgrid__label">Tools</h3>
+            <div class="chips chips--sm">
+              <span class="chip">Git</span><span class="chip">GitHub</span><span class="chip">VS Code</span><span
+                class="chip">Vercel</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <img class="footer__avatar" src="abhay.png" alt="Abhay Mittal">
+      <div class="footer__socials">
+      <a href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg></a>
+      <a href="https://x.com/abhaymittal2005" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
+        <svg class="icon icon--x" viewBox="0 0 24 24"><use href="#i-x" /></svg></a>
+      <a href="https://www.linkedin.com/in/abhaym17/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-linkedin" /></svg></a>
+      <a href="mailto:abhaymittal3333@gmail.com" aria-label="Email">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-mail" /></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
