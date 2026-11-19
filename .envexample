@@ -1,0 +1,15 @@
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/portfolio?retryWrites=true&w=majority
+JWT_SECRET=replace-with-a-long-random-secret
+ADMIN_EMAIL=you@example.com
+ADMIN_PASSWORD=replace-with-a-strong-password
+PORT=3000
+NODE_ENV=development
+# Optional: GitHub account used by "Import from GitHub" (defaults to Abhay172005)
+GITHUB_USER=Abhay172005
+# Optional: a GitHub token (no scopes needed for public repos) raises the lookup limit from 60 to 5,000 an hour
+GITHUB_TOKEN=
+# Optional but needed before deploying: image uploads go to Cloudinary instead of the local uploads/ folder.
+# Copy "API environment variable" from the Cloudinary dashboard: cloudinary://<api_key>:<api_secret>@<cloud_name>
+CLOUDINARY_URL=
+# Optional: Cloudinary folder for uploads (defaults to portfolio)
+CLOUDINARY_FOLDER=portfolio

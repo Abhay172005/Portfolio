@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=20261135" />
 </head>
 
 <body>
@@ -25,19 +25,27 @@
       <nav class="nav__links" id="navLinks" aria-label="Primary">
         <a href="index.html" class="nav__link">Home</a>
         <a href="projects.html" class="nav__link">Projects</a>
+        <a href="blog.html" class="nav__link">Blog</a>
         <a href="resume.html" class="nav__link is-active" aria-current="page">Resume</a>
       </nav>
-      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
+      <div class="nav__controls">
+        <a class="nav__admin" href="admin.html" aria-label="Open portfolio settings" title="Portfolio settings">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#i-settings" /></svg>
+        </a>
+        <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
   <main>
     <div class="container page page--enter">
 
-      <div class="resume__top">
-        <a class="btn btn--primary" href="resume.pdf" target="_blank" rel="noopener noreferrer">
+      <div class="section__head resume__head">
+        <h1 class="section__title">Resume</h1>
+        <span class="section__rule"></span>
+        <a class="btn btn--primary" href="Resume.pdf" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24"><use href="#i-download" /></svg> PDF Resume
         </a>
       </div>
@@ -52,21 +60,27 @@
           <div class="entry__head">
             <div>
               <h3 class="entry__title">SRM Institute of Science and Technology</h3>
-              <p class="entry__org">B.Tech in Computer Science and Engineering · CGPA 8.73 / 10</p>
+              <p class="entry__org">B.Tech in Computer Science and Engineering</p>
             </div>
             <div class="entry__meta">
-              <p class="entry__date">June 2024 — May 2028</p>
-              <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Chennai, India</p>
+              <p class="entry__date">Expected May 2028</p>
+              <p class="entry__place">
+                <svg class="icon" viewBox="0 0 24 24">
+                  <use href="#i-pin" />
+                </svg>
+                Chennai, India
+              </p>
             </div>
           </div>
           <div class="chips chips--sm">
             <span class="chip">Data Structures &amp; Algorithms</span>
-            <span class="chip">Object-Oriented Programming</span>
+            <span class="chip">Database Management Systems</span>
             <span class="chip">Operating Systems</span>
-            <span class="chip">DBMS</span>
+            <span class="chip">Computer Networks</span>
           </div>
         </div>
       </section>
+
 
       <!-- Experience -->
       <section class="rsec">
@@ -116,25 +130,22 @@
           <h2 class="section__title">Certifications</h2>
           <span class="section__rule"></span>
         </div>
-        <div class="timeline">
-          <div class="timeline__item reveal">
-            <div class="card">
-              <h3 class="entry__title">Geodata Processing using Python and Machine Learning</h3>
-              <p class="entry__org">ISRO — IIRS · A+ Grade</p>
-            </div>
-          </div>
-          <div class="timeline__item reveal">
-            <div class="card">
-              <h3 class="entry__title">Certified Generative AI Professional · AI Foundations Associate</h3>
-              <p class="entry__org">Oracle Cloud Infrastructure 2025</p>
-            </div>
-          </div>
-          <div class="timeline__item reveal">
-            <div class="card">
-              <h3 class="entry__title">SAP Generative AI Developer</h3>
-              <p class="entry__org">SAP Certified</p>
-            </div>
-          </div>
+        <div class="certs">
+          <article class="card cert reveal">
+            <span class="cert__icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-award" /></svg></span>
+            <h3 class="entry__title">Geodata Processing using Python and Machine Learning</h3>
+            <p class="entry__org">ISRO — IIRS · A+ Grade</p>
+          </article>
+          <article class="card cert reveal">
+            <span class="cert__icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-award" /></svg></span>
+            <h3 class="entry__title">Certified Generative AI Professional · AI Foundations Associate</h3>
+            <p class="entry__org">Oracle Cloud Infrastructure 2025</p>
+          </article>
+          <article class="card cert reveal">
+            <span class="cert__icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-award" /></svg></span>
+            <h3 class="entry__title">SAP Generative AI Developer</h3>
+            <p class="entry__org">SAP Certified</p>
+          </article>
         </div>
       </section>
 
@@ -144,22 +155,14 @@
           <h2 class="section__title">Activities</h2>
           <span class="section__rule"></span>
         </div>
-        <div class="timeline">
-          <div class="timeline__item reveal">
-            <div class="card">
-              <div class="entry__head">
-                <div>
-                  <h3 class="entry__title">Corporate Member</h3>
-                  <p class="entry__org">FOSS Club — SRMIST</p>
-                </div>
-                <div class="entry__meta">
-                  <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Chennai, India</p>
-                </div>
-              </div>
-              <ul class="bullets">
-                <li>Participated in <strong>10+</strong> national and university-level hackathons, building prototypes
-                  in cross-functional teams.</li>
-              </ul>
+        <div class="card reveal">
+          <div class="entry__head entry__head--flush">
+            <div>
+              <h3 class="entry__title">Corporate Member</h3>
+              <p class="entry__org">FOSS Club — SRMIST</p>
+            </div>
+            <div class="entry__meta">
+              <p class="entry__place"><svg class="icon" viewBox="0 0 24 24"><use href="#i-pin" /></svg> Chennai, India</p>
             </div>
           </div>
         </div>
@@ -234,7 +237,7 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=20261136"></script>
 </body>
 
 </html>

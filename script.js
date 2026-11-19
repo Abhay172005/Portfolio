@@ -9,7 +9,7 @@ const repo = (name) => `https://github.com/${GITHUB_USER}/${name}`;
 /* ---------- Projects ----------
    Order here is the order shown. The first FEATURED_COUNT appear on the home page.
    Optional fields per project:
-     image: "images/crimelens.png"   screenshot that replaces the generated cover
+     image: "https://…"              screenshot that replaces the generated cover
      live:  "https://…"              adds a Live button / icon
      demo:  "https://youtube.com/…"  adds a Demo button / icon
 */
@@ -18,7 +18,7 @@ const FEATURED_COUNT = 4;
 const PROJECTS = [
   {
     slug: "crimelens",
-    image: "images/crimelens.png",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053449/portfolio/gogwv2h8q8bstae0ifee.png",
     name: "CrimeLens",
     tagline: "AI forensic investigation suite.",
     about: [
@@ -36,7 +36,7 @@ const PROJECTS = [
   },
   {
     slug: "autocollect",
-    image: "images/autocollect.png",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053448/portfolio/qyd5xhzwjw8tjqcprzfo.png",
     name: "AutoCollect",
     tagline: "Smart receivables & payment reminders.",
     about: [
@@ -54,7 +54,7 @@ const PROJECTS = [
   },
   {
     slug: "robust-deepfake-detection",
-    image: "images/deepfake.png",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053450/portfolio/vxzku8vckfwvxhfokfbc.png",
     name: "Robust Deepfake Detection",
     tagline: "Does the detector survive compression?",
     about: [
@@ -74,7 +74,7 @@ const PROJECTS = [
   },
   {
     slug: "rippleai",
-    image: "images/rippleai.png",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053453/portfolio/q0yqzclaeifpqugfnak0.png",
     name: "RippleAI",
     tagline: "Detect the signal before it becomes the incident.",
     about: [
@@ -92,7 +92,7 @@ const PROJECTS = [
   },
   {
     slug: "smart-elderly-fall-detection",
-    image: "images/smart-elderly-fall-detection.png",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053454/portfolio/dsspsptccakqo8wautge.png",
     name: "Smart Elderly Fall Detection",
     tagline: "Protection that notices. Response that matters.",
     about: [
@@ -108,46 +108,44 @@ const PROJECTS = [
     hue: 218,
     repo: repo("Elderly-Fall-Detection"),
   },
-
-{
-  slug: "freight-mind",
-  image: "images/freight-mind.png",
-  name: "Freight Mind",
-  tagline: "Predict shipment delays before they become costly disruptions.",
-  about: [
-    "Freight Mind is an AI-powered predictive delay intelligence platform for logistics and supply-chain teams. It combines historical shipment data with live weather and news signals to estimate shipment delay risks, assess financial exposure, explain contributing factors, and recommend actionable mitigation strategies.",
-    "The platform provides a unified operational dashboard where users can analyze shipment risks, understand prediction drivers, visualize routes, and compare alternative transportation options."
-  ],
-  highlights: [
-    "Predicts shipment delay probability and expected duration using Random Forest and XGBoost machine learning models.",
-    "Integrates SHAP-based explainability to identify and visualize the key factors influencing each delay prediction.",
-    "Enriches shipment assessments with live weather information from OpenWeather and relevant logistics news through NewsAPI.",
-    "Uses the OpenAI API to generate AI-powered risk assessments, mitigation recommendations, and alternative transportation mode comparisons.",
-    "Estimates financial exposure, including holding costs, potential penalties, and revenue at risk, while visualizing shipment routes through MapLibre GL JS and OpenFreeMap."
-  ],
-  tech: [
-    "React",
-    "Vite",
-    "Tailwind CSS",
-    "Node.js",
-    "Express",
-    "Python",
-    "FastAPI",
-    "scikit-learn",
-    "XGBoost",
-    "SHAP",
-    "OpenAI API",
-    "Supabase PostgreSQL",
-    "OpenWeather",
-    "NewsAPI",
-    "MapLibre GL JS",
-    "OpenFreeMap"
-  ],
-  icon: "i-truck",
-  hue: 35,
-  repo: repo("Freight-Mind"),
-  
-},
+  {
+    slug: "freight-mind",
+    image: "https://res.cloudinary.com/e1kdp0xz/image/upload/f_auto,q_auto,c_limit,w_2000/v1795053451/portfolio/ts5suuqh9dmdeey5mepr.png",
+    name: "Freight Mind",
+    tagline: "Predict shipment delays before they become costly disruptions.",
+    about: [
+      "Freight Mind is an AI-powered predictive delay intelligence platform for logistics and supply-chain teams. It combines historical shipment data with live weather and news signals to estimate shipment delay risks, assess financial exposure, explain contributing factors, and recommend actionable mitigation strategies.",
+      "The platform provides a unified operational dashboard where users can analyze shipment risks, understand prediction drivers, visualize routes, and compare alternative transportation options."
+    ],
+    highlights: [
+      "Predicts shipment delay probability and expected duration using Random Forest and XGBoost machine learning models.",
+      "Integrates SHAP-based explainability to identify and visualize the key factors influencing each delay prediction.",
+      "Enriches shipment assessments with live weather information from OpenWeather and relevant logistics news through NewsAPI.",
+      "Uses the OpenAI API to generate AI-powered risk assessments, mitigation recommendations, and alternative transportation mode comparisons.",
+      "Estimates financial exposure, including holding costs, potential penalties, and revenue at risk, while visualizing shipment routes through MapLibre GL JS and OpenFreeMap."
+    ],
+    tech: [
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "Node.js",
+      "Express",
+      "Python",
+      "FastAPI",
+      "scikit-learn",
+      "XGBoost",
+      "SHAP",
+      "OpenAI API",
+      "Supabase PostgreSQL",
+      "OpenWeather",
+      "NewsAPI",
+      "MapLibre GL JS",
+      "OpenFreeMap"
+    ],
+    icon: "i-truck",
+    hue: 35,
+    repo: repo("Freight-Mind"),
+  },
 ];
 
 /* Small brand logos for tech chips (slug/colour on cdn.simpleicons.org). */
@@ -166,7 +164,20 @@ const TECH_ICONS = {
   Leaflet: "leaflet/7EBC6F",
   Redis: "redis/FF4438",
   Docker: "docker/2496ED",
+  JavaScript: "javascript/F7DF1E",
+  Java: "openjdk/E2E8F0",
+  HTML: "html5/E34F26",
+  CSS: "css/663399",
+  Supabase: "supabase/3FCF8E",
+  PostgreSQL: "postgresql/4169E1",
+  Git: "git/F05032",
+  GitHub: "github/E2E8F0",
+  Vercel: "vercel/E2E8F0",
 };
+
+/* "React.js" and "React" share a logo, as do "Express.js" and "Express". */
+const techLogo = (name) => TECH_ICONS[name] || TECH_ICONS[String(name).replace(/\.js$/i, "")];
+const logoImg = (slug) => `<img src="https://cdn.simpleicons.org/${slug}" alt="" width="14" height="14" loading="lazy" onerror="this.remove()">`;
 
 const SPRITE = `
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -186,7 +197,9 @@ const SPRITE = `
   <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.48 12.89 17 22l-5-3-5 3 1.52-9.11"/></symbol>
   <symbol id="i-truck" viewBox="0 0 24 24"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 </defs></svg>`;
 document.body.insertAdjacentHTML("afterbegin", SPRITE);
 
@@ -200,12 +213,15 @@ document.documentElement.classList.add("js");
 
 /* ---------- Shared render helpers ---------- */
 function chip(name) {
-  const logo = TECH_ICONS[name];
-  const img = logo
-    ? `<img src="https://cdn.simpleicons.org/${logo}" alt="" width="14" height="14" loading="lazy" onerror="this.remove()">`
-    : "";
-  return `<span class="chip">${img}${esc(name)}</span>`;
+  const logo = techLogo(name);
+  return `<span class="chip">${logo ? logoImg(logo) : ""}${esc(name)}</span>`;
 }
+
+/* Resume skills are written in the HTML; add the same logos the project cards use. */
+$$(".skillgrid .chip").forEach((el) => {
+  const logo = techLogo(el.textContent.trim());
+  if (logo) el.insertAdjacentHTML("afterbegin", logoImg(logo));
+});
 
 function chips(list, max = Infinity) {
   const shown = list.slice(0, max).map(chip).join("");
@@ -242,15 +258,11 @@ function projectCard(p) {
 
 /* ---------- Home: featured projects ---------- */
 const featuredGrid = $("#featuredGrid");
-if (featuredGrid) featuredGrid.innerHTML = PROJECTS.slice(0, FEATURED_COUNT).map(projectCard).join("");
-
-/* ---------- Projects page ---------- */
 const projectGrid = $("#projectGrid");
-if (projectGrid) projectGrid.innerHTML = PROJECTS.map(projectCard).join("");
-
-/* ---------- Project detail page ---------- */
 const detail = $("#projectDetail");
-if (detail) {
+
+function renderDetail() {
+  if (!detail) return;
   const slug = new URLSearchParams(location.search).get("p");
   const p = PROJECTS.find((x) => x.slug === slug);
   if (!p) {
@@ -285,6 +297,93 @@ if (detail) {
       </div>`;
   }
 }
+
+/* Projects marked "show on home page" in the admin, in their saved order.
+   If none are marked (or the embedded list is in use), the first FEATURED_COUNT are shown. */
+function homeProjects(list = PROJECTS) {
+  const chosen = list.filter((p) => p.showOnHome);
+  return chosen.length ? chosen : list.slice(0, FEATURED_COUNT);
+}
+
+function renderProjects() {
+  if (featuredGrid) featuredGrid.innerHTML = homeProjects().map(projectCard).join("");
+  if (projectGrid) projectGrid.innerHTML = PROJECTS.map(projectCard).join("");
+  renderDetail();
+}
+
+renderProjects();
+
+/* Use database-managed projects when the portfolio is served with the admin API.
+   The embedded list above remains a safe fallback for static hosting. */
+(async function loadManagedProjects() {
+  try {
+    const res = await fetch("/api/projects", { headers: { Accept: "application/json" } });
+    if (!res.ok) return;
+    const managedProjects = await res.json();
+    if (!Array.isArray(managedProjects) || !managedProjects.length) return;
+    PROJECTS.splice(0, PROJECTS.length, ...managedProjects);
+    renderProjects();
+    $$(".project.reveal").forEach((el) => el.classList.add("is-visible"));
+  } catch {
+    // Static deployments deliberately continue using the embedded project data.
+  }
+})();
+
+/* ---------- Blog (list on blog.html, single post on post.html) ---------- */
+const formatPostDate = (d) => (d ? new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "");
+
+function postCard(p) {
+  const tags = (p.tags || []).slice(0, 3).map(esc).join(" · ");
+  return `
+    <a class="post-card reveal" href="post.html?s=${encodeURIComponent(p.slug)}">
+      ${p.cover ? `<div class="post-card__cover"><img src="${esc(p.cover)}" alt="" loading="lazy"></div>` : ""}
+      <div class="post-card__body">
+        <p class="post-card__meta">${formatPostDate(p.publishedAt)}${tags ? ` · ${tags}` : ""}</p>
+        <h2 class="post-card__title">${esc(p.title)}</h2>
+        ${p.excerpt ? `<p class="post-card__excerpt">${esc(p.excerpt)}</p>` : ""}
+        <span class="post-card__more">Read post ${icon("i-arrow-right")}</span>
+      </div>
+    </a>`;
+}
+
+(async function blog() {
+  const list = $("#blogList");
+  const article = $("#postDetail");
+  if (!list && !article) return;
+
+  if (list) {
+    const empty = `<div class="card blog-empty"><p class="detail__about">Writing about the products, systems, and machine-learning work behind my projects. New posts are on the way.</p></div>`;
+    try {
+      const res = await fetch("/api/posts", { headers: { Accept: "application/json" } });
+      const posts = res.ok ? await res.json() : [];
+      list.innerHTML = Array.isArray(posts) && posts.length ? posts.map(postCard).join("") : empty;
+    } catch {
+      list.innerHTML = empty;
+    }
+    $$(".post-card.reveal", list).forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
+
+  const slug = new URLSearchParams(location.search).get("s") || "";
+  const notFound = `
+    <h1 class="detail__title">Post not found</h1>
+    <p class="detail__tagline">That post doesn't exist or isn't published — <a class="accent" href="blog.html">see all posts</a>.</p>`;
+  try {
+    const res = await fetch(`/api/posts/${encodeURIComponent(slug)}`, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(res.status);
+    const p = await res.json();
+    document.title = `${p.title} — Abhay Mittal`;
+    const minutes = typeof readingTime === "function" ? readingTime(p.content) : null;
+    article.innerHTML = `
+      ${p.cover ? `<div class="post__cover"><img src="${esc(p.cover)}" alt=""></div>` : ""}
+      <h1 class="detail__title">${esc(p.title)}</h1>
+      <p class="post__meta">${formatPostDate(p.publishedAt)}${minutes ? ` · ${minutes} min read` : ""}</p>
+      ${(p.tags || []).length ? `<div class="chips post__tags">${p.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join("")}</div>` : ""}
+      <div class="prose">${typeof renderMarkdown === "function" ? renderMarkdown(p.content) : `<p>${esc(p.content)}</p>`}</div>`;
+  } catch {
+    article.innerHTML = notFound;
+  }
+})();
 
 /* ---------- Mobile nav ---------- */
 const navToggle = $("#navToggle");
