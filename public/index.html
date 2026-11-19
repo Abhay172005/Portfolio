@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abhay Mittal</title>
+  <meta name="description"
+    content="Abhay Mittal — Computer Science student at SRM IST building full-stack products and computer-vision models." />
+  <meta name="theme-color" content="#0b0f19" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=20261135" />
+</head>
+
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <div class="container nav__inner">
+      <a href="index.html" class="nav__logo" aria-label="Abhay Mittal — home">&lt;AM /&gt;</a>
+      <nav class="nav__links" id="navLinks" aria-label="Primary">
+        <a href="index.html" class="nav__link is-active" aria-current="page">Home</a>
+        <a href="projects.html" class="nav__link">Projects</a>
+        <a href="blog.html" class="nav__link">Blog</a>
+        <a href="resume.html" class="nav__link">Resume</a>
+      </nav>
+      <div class="nav__controls">
+        <a class="nav__admin" href="admin.html" aria-label="Open portfolio settings" title="Portfolio settings">
+          <svg class="icon" viewBox="0 0 24 24"><use href="#i-settings" /></svg>
+        </a>
+        <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page">
+
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero__photo">
+          <img src="abhay-photo.webp" alt="Portrait of Abhay Mittal" width="280" height="280" />
+        </div>
+        <div class="hero__text">
+        <p class="eyebrow">Hey, I'm</p>
+        <h1 class="hero__name">Abhay Mittal<span class="accent">.</span></h1>
+        <h2 class="hero__tagline">I build full-stack products &amp; applied AI.</h2>
+        <p class="hero__bio">
+         Computer Science student passionate about building impactful software, competing in hackathons, and exploring deep learning. Currently focused on full-stack development and machine learning.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--ghost" href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg> GitHub
+          </a>
+          <a class="btn btn--primary" href="https://www.linkedin.com/in/abhaym17/" target="_blank"
+            rel="noopener noreferrer">
+            <svg class="icon" viewBox="0 0 24 24"><use href="#i-linkedin" /></svg> LinkedIn
+          </a>
+        </div>
+        </div>
+      </section>
+
+      <!-- Focus cards -->
+      <section class="focus" aria-label="What I do">
+        <article class="focus__card reveal">
+          <svg class="icon accent" viewBox="0 0 24 24"><use href="#i-code" /></svg>
+          <h3>Full-Stack Dev</h3>
+          <p>React, Node, Express, MongoDB — end-to-end product engineering.</p>
+        </article>
+        <article class="focus__card reveal">
+          <svg class="icon accent" viewBox="0 0 24 24"><use href="#i-eye" /></svg>
+          <h3>Computer Vision</h3>
+          <p>PyTorch, OpenCV, YOLOv8 — deepfake detection research.</p>
+        </article>
+        <article class="focus__card reveal">
+          <svg class="icon accent" viewBox="0 0 24 24"><use href="#i-cpu" /></svg>
+          <h3>Applied AI</h3>
+          <p>Vision and language models wired into real products.</p>
+        </article>
+      </section>
+
+      <!-- Projects -->
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Projects</h2>
+          <span class="section__rule"></span>
+          <a class="section__more" href="projects.html">All <svg class="icon" viewBox="0 0 24 24"><use href="#i-arrow-right" /></svg></a>
+        </div>
+        <div class="projects" id="featuredGrid"></div>
+      </section>
+
+      <!-- GitHub -->
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">GitHub</h2>
+          <span class="section__rule"></span>
+        </div>
+        <div class="gh">
+          <div class="gh__scroll">
+            <div class="gh__months" id="ghMonths"></div>
+            <div class="gh__grid" id="ghGrid" role="img" aria-label="GitHub contribution calendar"></div>
+          </div>
+          <div class="gh__foot">
+            <span id="ghTotal">Loading contributions…</span>
+            <span class="gh__legend">Less
+              <i data-l="0"></i><i data-l="1"></i><i data-l="2"></i><i data-l="3"></i><i data-l="4"></i>
+              More</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <img class="footer__avatar" src="abhay.png" alt="Abhay Mittal">
+      <div class="footer__socials">
+      <a href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg></a>
+      <a href="https://x.com/abhaymittal2005" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">
+        <svg class="icon icon--x" viewBox="0 0 24 24"><use href="#i-x" /></svg></a>
+      <a href="https://www.linkedin.com/in/abhaym17/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-linkedin" /></svg></a>
+      <a href="mailto:abhaymittal3333@gmail.com" aria-label="Email">
+        <svg class="icon" viewBox="0 0 24 24"><use href="#i-mail" /></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js?v=20261136"></script>
+</body>
+
+</html>

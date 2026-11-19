@@ -1,12 +1,13 @@
 /* Image uploads for the admin dashboard.
    With Cloudinary configured (CLOUDINARY_URL, or the three CLOUDINARY_* variables) images go to
    Cloudinary and are served from its CDN. Without it they are saved to /uploads on this machine,
-   which is fine for local development but is wiped on most hosts when the server restarts. */
+   which only works for local development: Vercel's file system is read-only. */
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const path = require("path");
 
-const MAX_BYTES = 8 * 1024 * 1024;
+// Vercel rejects request bodies over 4.5 MB; the dashboard shrinks bigger photos before sending them.
+const MAX_BYTES = 4 * 1024 * 1024;
 const EXTENSIONS = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif", "image/avif": "avif" };
 
 class UploadError extends Error {
@@ -69,11 +70,13 @@ async function saveLocally(buffer, type) {
 
 async function storeImage(buffer) {
   if (!Buffer.isBuffer(buffer) || !buffer.length) throw new UploadError("No image was received.");
-  if (buffer.length > MAX_BYTES) throw new UploadError("Images must be 8 MB or smaller.", 413);
+  if (buffer.length > MAX_BYTES) throw new UploadError(`Images must be ${MAX_BYTES / 1048576} MB or smaller.`, 413);
   const type = sniffType(buffer);
   if (!type) throw new UploadError("That file isn't a supported image. Use PNG, JPG, WebP, GIF or AVIF.", 415);
   const config = cloudinaryConfig();
-  return config ? uploadToCloudinary(buffer, type, config) : saveLocally(buffer, type);
+  if (config) return uploadToCloudinary(buffer, type, config);
+  if (process.env.VERCEL) throw new UploadError("Image uploads need Cloudinary. Add CLOUDINARY_URL to the Vercel project's Environment Variables.", 503);
+  return saveLocally(buffer, type);
 }
 
 const uploadStorage = () => (cloudinaryConfig() ? "cloudinary" : "local");

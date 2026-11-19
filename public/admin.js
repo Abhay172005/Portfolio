@@ -20,7 +20,8 @@
 
   const state = { email: "", projects: [], posts: [], repos: null, dirty: false, ready: false, storage: "" };
   const IMAGE_TYPES = /^image\/(png|jpe?g|webp|gif|avif)$/;
-  const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+  const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // largest file the picker accepts
+  const MAX_UPLOAD_BYTES = 4 * 1024 * 1024; // largest file the server accepts; bigger photos are shrunk first
   const HUE_PRESETS = [350, 15, 35, 50, 140, 168, 190, 210, 235, 265, 290, 320];
 
   function setDirty(on) {
@@ -97,12 +98,35 @@
   const growAll = (root) => qsa("textarea[data-autogrow]", root).forEach(autogrow);
 
   /* ---------- Image upload ---------- */
+  /** Re-encodes a photo over the upload limit as a smaller WebP (falling back to JPEG). GIFs are left alone so they keep their animation. */
+  async function shrinkForUpload(file) {
+    if (file.size <= MAX_UPLOAD_BYTES) return file;
+    if (file.type === "image/gif") throw new Error(`That GIF is ${(file.size / 1048576).toFixed(1)} MB. GIFs must be 4 MB or smaller.`);
+    let bitmap;
+    try { bitmap = await createImageBitmap(file); } catch { throw new Error("Couldn't read that image to shrink it."); }
+    try {
+      for (const longest of [2400, 1800, 1400]) {
+        const scale = Math.min(1, longest / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        for (const type of ["image/webp", "image/jpeg"]) {
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, 0.85));
+          if (blob && blob.type === type && blob.size <= MAX_UPLOAD_BYTES) return blob;
+        }
+      }
+    } finally { bitmap.close?.(); }
+    throw new Error("That image is too large to upload, even after shrinking it.");
+  }
+
   async function uploadImage(file) {
     if (!file || !IMAGE_TYPES.test(file.type)) throw new Error("Choose a PNG, JPG, WebP, GIF or AVIF image.");
     if (file.size > MAX_IMAGE_BYTES) throw new Error(`That image is ${(file.size / 1048576).toFixed(1)} MB. The limit is 8 MB.`);
+    const body = await shrinkForUpload(file);
     let res;
     try {
-      res = await fetch("/api/admin/upload", { method: "POST", credentials: "same-origin", headers: { "Content-Type": file.type }, body: file });
+      res = await fetch("/api/admin/upload", { method: "POST", credentials: "same-origin", headers: { "Content-Type": body.type }, body });
     } catch {
       throw new Error("Upload failed. Is the server running?");
     }

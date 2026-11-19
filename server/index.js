@@ -11,18 +11,36 @@ const { importRepo, listRepos, GitHubError } = require("./github");
 const { storeImage, uploadStorage, UploadError, MAX_BYTES } = require("./uploads");
 
 const app = express();
-const root = path.join(__dirname, "..");
+const publicDir = path.join(__dirname, "..", "public");
 const port = Number(process.env.PORT || 3000);
-const isProduction = process.env.NODE_ENV === "production";
+const onVercel = Boolean(process.env.VERCEL);
+const isProduction = process.env.NODE_ENV === "production" || onVercel;
 const githubUser = process.env.GITHUB_USER || "Abhay172005";
 
 if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
-  throw new Error("MONGODB_URI and JWT_SECRET must be set in .env.");
+  throw new Error("MONGODB_URI and JWT_SECRET must be set (in .env locally, or in the Vercel project's Environment Variables).");
+}
+
+/* One shared MongoDB connection. On Vercel each function instance connects on its first request
+   and reuses the connection afterwards; a failed attempt is retried on the next request. */
+let connecting = null;
+function connectDb() {
+  if (mongoose.connection.readyState === 1) return Promise.resolve();
+  connecting ??= mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 })
+    .catch((error) => { connecting = null; throw error; });
+  return connecting;
 }
 
 app.disable("x-powered-by");
+if (onVercel) app.set("trust proxy", 1); // real visitor IPs for the login rate limit
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+app.use("/api", async (_req, res, next) => {
+  try { await connectDb(); next(); } catch (error) {
+    console.error("MongoDB connection failed:", error.message);
+    res.status(503).json({ error: "The database is unavailable right now. Please try again shortly." });
+  }
+});
 
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false });
 
@@ -221,19 +239,25 @@ app.delete("/api/admin/posts/:id", requireAdmin, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-app.use("/server", (_req, res) => res.sendStatus(404));
-app.use(express.static(root, { dotfiles: "ignore", index: "index.html" }));
+// On Vercel the CDN serves public/ and only /api reaches this app; locally Express serves both.
+app.use(express.static(publicDir, { dotfiles: "ignore", index: "index.html" }));
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads"), { dotfiles: "ignore" }));
 app.use((error, req, res, _next) => {
   if (error?.code === 11000) return res.status(409).json({ error: "That slug is already used. Pick a different one." });
   if (error instanceof GitHubError || error instanceof UploadError) return res.status(error.status).json({ error: error.message });
   if (error?.name === "CastError") return res.status(404).json({ error: "Not found." });
   if (error?.type === "entity.too.large") {
-    return res.status(413).json({ error: req.path === "/api/admin/upload" ? "Images must be 8 MB or smaller." : "That is too large to save." });
+    return res.status(413).json({ error: req.path === "/api/admin/upload" ? `Images must be ${MAX_BYTES / 1048576} MB or smaller.` : "That is too large to save." });
   }
   console.error(error);
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
 
-mongoose.connect(process.env.MONGODB_URI).then(() => {
-  app.listen(port, () => console.log(`Portfolio running at http://localhost:${port}`));
-}).catch((error) => { console.error("MongoDB connection failed:", error.message); process.exit(1); });
+// Vercel imports the app (api/index.js); `npm run dev` / `npm start` run this file directly.
+if (require.main === module) {
+  connectDb().then(() => {
+    app.listen(port, () => console.log(`Portfolio running at http://localhost:${port}`));
+  }).catch((error) => { console.error("MongoDB connection failed:", error.message); process.exit(1); });
+}
+
+module.exports = app;

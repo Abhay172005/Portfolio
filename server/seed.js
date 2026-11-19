@@ -6,7 +6,7 @@ const { Project } = require("./models");
 
 async function run() {
   if (!process.env.MONGODB_URI) throw new Error("Set MONGODB_URI in .env first.");
-  const source = fs.readFileSync(path.join(__dirname, "..", "script.js"), "utf8");
+  const source = fs.readFileSync(path.join(__dirname, "..", "public", "script.js"), "utf8");
   const start = source.indexOf("const PROJECTS = [");
   const end = source.indexOf("\n];", start);
   if (start < 0 || end < 0) throw new Error("Could not find the embedded projects list.");
