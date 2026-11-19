@@ -274,7 +274,7 @@ function renderDetail() {
     const btn = (href, cls, ic, label) =>
       `<a class="btn ${cls}" href="${href}" target="_blank" rel="noopener noreferrer">${icon(ic)} ${label}</a>`;
     detail.innerHTML = `
-      ${cover(p, true)}
+      ${showcase(p)}
       <h1 class="detail__title">${esc(p.name)}</h1>
       <p class="detail__tagline">${esc(p.tagline)}</p>
       <div class="detail__actions">
@@ -323,7 +323,7 @@ renderProjects();
     if (!Array.isArray(managedProjects) || !managedProjects.length) return;
     PROJECTS.splice(0, PROJECTS.length, ...managedProjects);
     renderProjects();
-    $$(".project.reveal").forEach((el) => el.classList.add("is-visible"));
+    reveal();
   } catch {
     // Static deployments deliberately continue using the embedded project data.
   }
@@ -360,7 +360,7 @@ function postCard(p) {
     } catch {
       list.innerHTML = empty;
     }
-    $$(".post-card.reveal", list).forEach((el) => el.classList.add("is-visible"));
+    reveal(list);
     return;
   }
 
@@ -397,23 +397,69 @@ if (navToggle && navLinks) {
   navLinks.addEventListener("click", (e) => e.target.closest("a") && setMenu(false));
 }
 
-/* ---------- Scroll reveal ---------- */
-let pending = $$(".reveal");
-const revealCheck = () => {
-  const limit = innerHeight - 40;
-  pending = pending.filter((el) => {
-    if (el.getBoundingClientRect().top > limit) return true;
-    el.classList.add("is-visible");
-    return false;
-  });
-  if (!pending.length) {
-    removeEventListener("scroll", revealCheck);
-    removeEventListener("resize", revealCheck);
-  }
-};
-addEventListener("scroll", revealCheck, { passive: true });
-addEventListener("resize", revealCheck);
-revealCheck();
+/* ---------- Scroll reveal: elements rise into place in 3D as they come into view ---------- */
+const revealer = "IntersectionObserver" in window
+  ? new IntersectionObserver((entries) => {
+      let i = 0;
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        // Cards that arrive together come in one after another.
+        entry.target.style.setProperty("--delay", `${Math.min(i++, 5) * 90}ms`);
+        entry.target.classList.add("is-visible");
+        revealer.unobserve(entry.target);
+      }
+    }, { rootMargin: "0px 0px -40px 0px" })
+  : null;
+
+function reveal(root = document) {
+  $$(".reveal:not(.is-visible)", root).forEach((el) => (revealer ? revealer.observe(el) : el.classList.add("is-visible")));
+}
+reveal();
+
+// Once its entrance has finished, an element switches to quick transitions so the tilt feels direct.
+document.addEventListener("transitionend", (e) => {
+  if (e.propertyName === "transform" && e.target.classList?.contains("is-visible")) e.target.classList.add("is-settled");
+});
+
+/* ---------- 3D tilt + glare on cards (mouse only) ---------- */
+(function tilt() {
+  if (reducedMotion || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  if (document.body.classList.contains("admin")) return; // keep the dashboard's forms still
+  // Project, focus and blog cards, resume and project-page cards, and the GitHub box.
+  const CARDS = ".project, .focus__card, .post-card, .card, .gh";
+  let active = null, last = null, raf = 0;
+
+  const update = () => {
+    raf = 0;
+    if (!active || !last) return;
+    const r = active.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (last.clientX - r.left) / r.width));
+    const y = Math.min(1, Math.max(0, (last.clientY - r.top) / r.height));
+    const max = r.width > 700 ? 2.5 : r.width > 420 ? 5 : 8;   // big cards tilt less
+    active.style.setProperty("--ry", `${((x - 0.5) * 2 * max).toFixed(2)}deg`);
+    active.style.setProperty("--rx", `${((0.5 - y) * 2 * max * 0.8).toFixed(2)}deg`);
+    active.style.setProperty("--gx", `${(x * 100).toFixed(1)}%`);
+    active.style.setProperty("--gy", `${(y * 100).toFixed(1)}%`);
+  };
+  const release = (el) => {
+    el.classList.remove("is-tilting");
+    ["--rx", "--ry"].forEach((p) => el.style.removeProperty(p));
+  };
+
+  document.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    const card = e.target.closest?.(CARDS);
+    if (card !== active) {
+      if (active) release(active);
+      // Cards that animate in can only tilt once they're showing.
+      active = card && (!card.classList.contains("reveal") || card.classList.contains("is-visible")) ? card : null;
+      if (active) active.classList.add("tiltable", "is-tilting", "is-settled");
+    }
+    last = e;
+    if (active && !raf) raf = requestAnimationFrame(update);
+  }, { passive: true });
+  document.addEventListener("mouseleave", () => { if (active) release(active); active = null; });
+})();
 
 /* ---------- GitHub contribution calendar (home) ---------- */
 (async function contributions() {
@@ -499,60 +545,147 @@ revealCheck();
   document.addEventListener("mouseleave", () => root.classList.remove("cursor-on"));
 })();
 
-/* ---------- Background particles ---------- */
+/* ---------- Background: 3D particle field ----------
+   Dots live in a slowly turning 3D cylinder and are drawn with perspective, so near ones are larger,
+   brighter and move faster than far ones. The field leans toward the mouse and its layers slide at
+   different speeds as the page scrolls. Nearby dots are joined by faint lines, like a constellation. */
 (function particles() {
   const canvas = $("#particles");
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   const colors = ["94,234,212", "148,163,184", "129,140,248"];
-  let w, h, dots = [], raf;
+  const LINK = 160;  // max 3D distance (px at the focal plane) for a connecting line
+  let w, h, R, H, D, pts = [], raf = 0;
+  let spin = 0, yaw = 0, pitch = 0, targetYaw = 0, targetPitch = 0;
 
   const resize = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     w = innerWidth; h = innerHeight;
     canvas.width = w * dpr; canvas.height = h * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const n = Math.min(70, Math.round((w * h) / 22000));
-    dots = Array.from({ length: n }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: Math.random() * 1.8 + 0.6,
-      vx: (Math.random() - 0.5) * 0.15,
-      vy: -(Math.random() * 0.25 + 0.05),
-      a: Math.random() * 0.35 + 0.08,
-      c: colors[Math.floor(Math.random() * colors.length)],
-    }));
+    R = Math.max(w, h) * 0.6;   // cylinder radius
+    H = h * 1.25;               // cylinder height (dots wrap vertically while scrolling)
+    D = R * 1.8;                // camera distance from the cylinder's axis
+    const n = Math.max(60, Math.min(200, Math.round((w * h) / 5200)));
+    pts = Array.from({ length: n }, () => {
+      const a = Math.random() * Math.PI * 2, r = R * Math.sqrt(Math.random());
+      return {
+        x: Math.cos(a) * r, z: Math.sin(a) * r, y: (Math.random() - 0.5) * H,
+        r: Math.random() * 1.2 + 0.7,
+        a: Math.random() * 0.35 + 0.15,
+        c: colors[Math.floor(Math.random() * colors.length)],
+        sx: 0, sy: 0, k: 0, on: false, wx: 0, wy: 0, wz: 0,   // filled in by draw()
+      };
+    });
     draw();
   };
 
   const draw = () => {
     ctx.clearRect(0, 0, w, h);
-    for (const d of dots) {
+    const cy = Math.cos(spin + yaw), sy = Math.sin(spin + yaw);
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const shift = reducedMotion ? 0 : scrollY * 0.3;
+    for (const p of pts) {
+      // Wrap vertically so scrolling a long page never empties the field.
+      const y0 = ((((p.y - shift) % H) + H * 1.5) % H) - H / 2;
+      const x1 = p.x * cy - p.z * sy, z1 = p.x * sy + p.z * cy;   // turn around the vertical axis
+      const y1 = y0 * cp - z1 * sp, z2 = y0 * sp + z1 * cp;       // lean toward / away from the viewer
+      const depth = D + z2;
+      p.on = depth > 40;
+      if (!p.on) continue;
+      p.k = D / depth;                                             // perspective scale
+      p.sx = w / 2 + x1 * p.k;
+      p.sy = h / 2 + y1 * p.k;
+      p.wx = x1; p.wy = y1; p.wz = z2;
+    }
+    // Constellation lines between dots that are close in 3D, fading with distance and depth.
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i];
+      if (!a.on) continue;
+      for (let j = i + 1; j < pts.length; j++) {
+        const b = pts[j];
+        if (!b.on) continue;
+        const dx = a.wx - b.wx, dy = a.wy - b.wy, dz = a.wz - b.wz;
+        const d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 > LINK * LINK) continue;
+        const alpha = (1 - Math.sqrt(d2) / LINK) * 0.11 * Math.min(1, (a.k + b.k) / 2);
+        ctx.strokeStyle = `rgba(94,234,212,${alpha.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.moveTo(a.sx, a.sy);
+        ctx.lineTo(b.sx, b.sy);
+        ctx.stroke();
+      }
+    }
+    for (const p of pts) {
+      if (!p.on || p.sx < -10 || p.sx > w + 10 || p.sy < -10 || p.sy > h + 10) continue;
+      const fog = Math.min(1, Math.max(0.25, (p.k - 0.55) / 0.9));   // far dots fade into the background
       ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${d.c},${d.a})`;
+      ctx.arc(p.sx, p.sy, Math.min(4, p.r * p.k * 1.3), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.c},${(p.a * fog).toFixed(3)})`;
       ctx.fill();
     }
   };
 
   const step = () => {
-    for (const d of dots) {
-      d.x += d.vx; d.y += d.vy;
-      if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; }
-      if (d.x < -5) d.x = w + 5;
-      if (d.x > w + 5) d.x = -5;
-    }
+    spin += 0.0007;
+    yaw += (targetYaw - yaw) * 0.04;
+    pitch += (targetPitch - pitch) * 0.04;
     draw();
     raf = requestAnimationFrame(step);
   };
 
   addEventListener("resize", resize);
   resize();
-  if (!reducedMotion) {
-    raf = requestAnimationFrame(step);
-    document.addEventListener("visibilitychange", () => {
-      cancelAnimationFrame(raf);
-      if (!document.hidden) raf = requestAnimationFrame(step);
-    });
-  }
+  if (reducedMotion) return; // one still frame
+  addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    targetYaw = (e.clientX / w - 0.5) * 0.35;
+    targetPitch = (e.clientY / h - 0.5) * -0.2;
+  }, { passive: true });
+  raf = requestAnimationFrame(step);
+  document.addEventListener("visibilitychange", () => {
+    cancelAnimationFrame(raf);
+    if (!document.hidden) raf = requestAnimationFrame(step);
+  });
+})();
+
+/* ---------- 3D: project screenshot in a browser window (project page) ----------
+   On a project's page the cover sits in a browser frame that leans back, straightens toward the
+   mouse, and tips further back as you scroll past it. */
+function showcase(p) {
+  return `
+    <div class="showcase">
+      <div class="showcase__window">
+        <div class="showcase__bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        ${cover(p, true)}
+      </div>
+    </div>`;
+}
+
+(function showcaseMotion() {
+  if (!detail || reducedMotion) return;
+  let raf = 0, pointer = null;
+  const update = () => {
+    raf = 0;
+    const win = $(".showcase__window");
+    if (!win) return;
+    const r = win.getBoundingClientRect();
+    // 0 while the window is in view below the nav, 1 once it has mostly scrolled off the top.
+    const away = Math.min(1, Math.max(0, (120 - r.top) / (r.height * 0.9)));
+    let rx = away * 22, ry = 0;
+    if (pointer && pointer.clientY > r.top && pointer.clientY < r.bottom && pointer.clientX > r.left && pointer.clientX < r.right) {
+      const x = (pointer.clientX - r.left) / r.width, y = (pointer.clientY - r.top) / r.height;
+      rx += (0.5 - y) * 8 - 8;   // straighten up (cancel the resting lean) and follow the mouse
+      ry = (x - 0.5) * 10;
+    }
+    win.style.setProperty("--wx", `${rx.toFixed(2)}deg`);
+    win.style.setProperty("--wy", `${ry.toFixed(2)}deg`);
+    win.style.setProperty("--ws", (1 - away * 0.08).toFixed(4));
+  };
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(update); };
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") { pointer = e; schedule(); } }, { passive: true });
+  document.addEventListener("mouseleave", () => { pointer = null; schedule(); });
+  schedule();
 })();

@@ -429,6 +429,23 @@ main {
   margin-top: 28px;
 }
 
+/* Page load: the hero lines rise in one after another. */
+.js .hero__text > * {
+  animation: rise-3d 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.js .hero__text > :nth-child(2) { animation-delay: 0.08s; }
+.js .hero__text > :nth-child(3) { animation-delay: 0.16s; }
+.js .hero__text > :nth-child(4) { animation-delay: 0.24s; }
+.js .hero__text > :nth-child(5) { animation-delay: 0.32s; }
+
+@keyframes rise-3d {
+  from {
+    opacity: 0;
+    transform: perspective(800px) translate3d(0, 26px, -60px) rotateX(20deg);
+  }
+}
+
 /* ============ Focus cards ============ */
 .focus {
   display: grid;
@@ -1163,16 +1180,63 @@ main {
   color: var(--accent);
 }
 
-/* ============ Reveal (only when JS is running) ============ */
+/* ============ Reveal + 3D tilt (only when JS is running) ============
+   Hidden elements wait below and behind their place, tipped back; they rise into place when they
+   scroll into view. Afterwards the same transform carries the mouse tilt (--rx / --ry / --lift,
+   set by script.js). Both states list the same transform functions so the browser can animate
+   between them. */
 .js .reveal {
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: perspective(1000px) translate3d(0, 44px, -90px) rotateX(14deg) rotateY(0deg);
+  transition:
+    opacity 0.7s ease var(--delay, 0s),
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1) var(--delay, 0s),
+    border-color 0.3s,
+    box-shadow 0.3s;
 }
 
-.js .reveal.is-visible {
+.js .reveal.is-visible,
+.tiltable {
   opacity: 1;
-  transform: none;
+  transform: perspective(1000px) translate3d(0, 0, var(--lift, 0px)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+}
+
+.js .reveal.is-settled,
+.tiltable {
+  transition: opacity 0.3s, transform 0.25s ease-out, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Tilting cards lift toward the viewer, cast a deeper shadow and catch a glare that follows the mouse. */
+.project,
+.focus__card,
+.post-card,
+.tiltable {
+  position: relative;
+}
+
+.project::after,
+.focus__card::after,
+.post-card::after,
+.tiltable::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(480px circle at var(--gx, 50%) var(--gy, 50%), rgba(94, 234, 212, 0.11), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.is-tilting {
+  --lift: 18px;
+  border-color: rgba(94, 234, 212, 0.22) !important;
+  box-shadow: 0 28px 50px -24px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(94, 234, 212, 0.04);
+}
+
+.is-tilting::after {
+  opacity: 1;
 }
 
 /* ============ Responsive ============ */
@@ -1563,6 +1627,59 @@ main {
   }
 }
 
+/* ============ 3D: project screenshot in a browser window (project page) ============ */
+.showcase {
+  margin-bottom: 36px;
+  perspective: 1400px;
+  animation: showcase-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.showcase__window {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: #0d1220;
+  box-shadow: 0 50px 90px -50px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(94, 234, 212, 0.05);
+  transform-origin: 50% 80%;
+  /* leans back 8deg at rest; script.js adds the scroll / mouse angles */
+  transform: rotateX(calc(8deg + var(--wx, 0deg))) rotateY(var(--wy, 0deg)) scale(var(--ws, 1));
+  transition: transform 0.35s ease-out;
+}
+
+.showcase__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.showcase__bar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.showcase__bar i:first-child {
+  background: rgba(94, 234, 212, 0.7);
+}
+
+.showcase .cover--wide {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+@keyframes showcase-in {
+  from {
+    opacity: 0;
+    transform: perspective(1400px) translate3d(0, 60px, -160px) rotateX(24deg);
+  }
+}
+
 /* ============ Print (e.g. "Save as PDF" from the browser) ============ */
 @media print {
   @page {
@@ -1597,6 +1714,11 @@ main {
   .back,
   .chip img {
     display: none !important;
+  }
+
+  /* the 3D browser window prints flat */
+  .showcase__window {
+    transform: none !important;
   }
 
   main {
