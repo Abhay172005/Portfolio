@@ -628,7 +628,8 @@ main {
   background: linear-gradient(to top, rgba(17, 24, 39, 0.8), transparent 55%);
 }
 
-.cover img {
+.cover img,
+.cover video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -639,7 +640,8 @@ main {
   transition: opacity 0.5s, transform 0.5s;
 }
 
-.project:hover .cover img {
+.project:hover .cover img,
+.project:hover .cover video {
   opacity: 1;
   transform: scale(1.03);
 }

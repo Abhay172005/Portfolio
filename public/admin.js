@@ -22,6 +22,9 @@
   const IMAGE_TYPES = /^image\/(png|jpe?g|webp|gif|avif)$/;
   const MAX_IMAGE_BYTES = 8 * 1024 * 1024; // largest file the picker accepts
   const MAX_UPLOAD_BYTES = 4 * 1024 * 1024; // largest file the server accepts; bigger photos are shrunk first
+  const VIDEO_TYPES = /^video\/(mp4|webm|quicktime)$/;
+  const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+  const MAX_VIDEO_SECONDS = 20;
   const HUE_PRESETS = [350, 15, 35, 50, 140, 168, 190, 210, 235, 265, 290, 320];
 
   function setDirty(on) {
@@ -140,19 +143,75 @@
     ? "Uploaded to Cloudinary."
     : "Saved on this computer. Set up Cloudinary before you deploy, or the image will be lost.");
 
-  /** Drag-and-drop / browse / paste image picker that stores the final URL in a hidden input. */
-  function createDropzone(root, onChange) {
+  /* ---------- Video upload (straight to Cloudinary) ---------- */
+  /** The video's length in seconds, or NaN if the browser can't read it (Cloudinary's reply is checked then). */
+  function videoDuration(file) {
+    return new Promise((resolve) => {
+      const probe = document.createElement("video");
+      const src = URL.createObjectURL(file);
+      const done = (seconds) => { URL.revokeObjectURL(src); resolve(seconds); };
+      probe.preload = "metadata";
+      probe.onloadedmetadata = () => done(probe.duration);
+      probe.onerror = () => done(NaN);
+      probe.src = src;
+    });
+  }
+
+  async function uploadVideo(file, onProgress) {
+    if (!file || !VIDEO_TYPES.test(file.type)) throw new Error("Choose an MP4, WebM or MOV video.");
+    if (file.size > MAX_VIDEO_BYTES) throw new Error(`That video is ${(file.size / 1048576).toFixed(0)} MB. The limit is 50 MB, so trim or compress it first.`);
+    const tooLong = (s) => s > MAX_VIDEO_SECONDS + 0.5;
+    const seconds = await videoDuration(file);
+    if (tooLong(seconds)) throw new Error(`That video is ${Math.round(seconds)} seconds long. Keep it to ${MAX_VIDEO_SECONDS} seconds or less.`);
+
+    const { uploadUrl, fields } = await api("/api/admin/video-signature");
+    const form = new FormData();
+    Object.entries(fields).forEach(([k, v]) => form.append(k, v));
+    form.append("file", file);
+    // XMLHttpRequest (not fetch) so the bar can show real upload progress.
+    const data = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", uploadUrl);
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress?.(e.loaded / e.total); };
+      xhr.onload = () => {
+        let body = {};
+        try { body = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
+        if (xhr.status >= 200 && xhr.status < 300) resolve(body);
+        else reject(new Error(`Cloudinary rejected the video: ${body.error?.message || `status ${xhr.status}`}.`));
+      };
+      xhr.onerror = () => reject(new Error("Couldn't reach Cloudinary. Check your internet connection."));
+      xhr.send(form);
+    });
+    if (tooLong(data.duration)) throw new Error(`That video is ${Math.round(data.duration)} seconds long. Keep it to ${MAX_VIDEO_SECONDS} seconds or less.`);
+    // Deliver a compressed, silent MP4 (plays everywhere), capped at 1280px wide.
+    const url = data.secure_url
+      .replace("/video/upload/", "/video/upload/ac_none,q_auto,vc_auto,c_limit,w_1280/")
+      .replace(/\.[a-z0-9]+$/i, ".mp4");
+    return { url, storage: "cloudinary" };
+  }
+
+  /** Drag-and-drop / browse / paste picker that uploads a file and stores the final URL in a hidden input.
+      Images by default; pass { kind: "video" } for the cover video. */
+  function createDropzone(root, onChange, { kind = "image" } = {}) {
+    const isVideo = kind === "video";
+    const accepts = (f) => (isVideo ? VIDEO_TYPES : IMAGE_TYPES).test(f?.type || "");
+    const upload = isVideo ? uploadVideo : (f) => uploadImage(f);
     const hidden = qs('input[type="hidden"]', root);
     const file = qs(".dropzone__file", root);
     const area = qs(".dropzone__area", root);
-    const img = qs(".dropzone__img", root);
+    const img = qs(".dropzone__img", root);   // an <img>, or a <video> for the cover video
     const progress = qs(".dropzone__progress", root);
     const note = qs(".dropzone__note", root);
     const urlInput = qs(".dropzone__url", root);
     const btn = (name) => qs(`[data-dz="${name}"]`, root);
     let busy = false;
 
-    const setNote = (text = "", kind = "") => { note.textContent = text; note.className = `dropzone__note ${kind}`.trim(); };
+    const setNote = (text = "", tone = "") => { note.textContent = text; note.className = `dropzone__note ${tone}`.trim(); };
+    const setProgress = (fraction) => {
+      root.classList.add("is-determinate");
+      progress.style.setProperty("--p", `${Math.round(fraction * 100)}%`);
+      setNote(`Uploading… ${Math.round(fraction * 100)}%`);
+    };
 
     function show(url) {
       const has = Boolean(url);
@@ -171,22 +230,26 @@
     }
 
     img.addEventListener("error", () => {
-      if (!hidden.value) return;
+      if (!hidden.value || busy) return;
       root.classList.remove("has-image");
       img.hidden = true;
-      setNote("Couldn't load this image. Check the link, or upload the file instead.", "error");
+      setNote(`Couldn't load this ${kind}. Check the link, or upload the file instead.`, "error");
     });
 
     async function handle(fileObj) {
       if (busy || !fileObj) return;
+      if (!accepts(fileObj)) {
+        setNote(isVideo ? "Choose an MP4, WebM or MOV video." : "Choose a PNG, JPG, WebP, GIF or AVIF image.", "error");
+        return;
+      }
       busy = true;
       root.classList.add("is-uploading");
       progress.hidden = false;
-      setNote(`Uploading ${fileObj.name || "image"}…`);
+      setNote(`Uploading ${fileObj.name || kind}…`);
       const localPreview = URL.createObjectURL(fileObj);
       show(localPreview);
       try {
-        const result = await uploadImage(fileObj);
+        const result = await upload(fileObj, setProgress);
         set(result.url);
         setNote(storageNote(result.storage), result.storage === "cloudinary" ? "" : "warn");
       } catch (error) {
@@ -195,7 +258,7 @@
       } finally {
         URL.revokeObjectURL(localPreview);
         busy = false;
-        root.classList.remove("is-uploading");
+        root.classList.remove("is-uploading", "is-determinate");
         progress.hidden = true;
         file.value = "";
       }
@@ -205,7 +268,7 @@
     area.addEventListener("click", browse);
     area.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); browse(); } });
     area.addEventListener("paste", (e) => {
-      const item = [...(e.clipboardData?.files || [])].find((f) => IMAGE_TYPES.test(f.type));
+      const item = [...(e.clipboardData?.files || [])].find(accepts);
       if (item) { e.preventDefault(); handle(item); }
     });
     file.addEventListener("change", () => handle(file.files[0]));
@@ -214,7 +277,7 @@
     area.addEventListener("drop", (e) => {
       e.preventDefault();
       root.classList.remove("is-over");
-      handle([...e.dataTransfer.files].find((f) => f.type.startsWith("image/")) || e.dataTransfer.files[0]);
+      handle([...e.dataTransfer.files].find(accepts) || e.dataTransfer.files[0]);
     });
     btn("replace").addEventListener("click", browse);
     btn("remove").addEventListener("click", () => { set(""); setNote(); });
@@ -235,7 +298,9 @@
         set(url, { silent: true });
         urlInput.hidden = true;
         btn("url").textContent = root.classList.contains("dropzone--compact") ? "Use a link" : "Use a link instead";
-        setNote(state.storage === "local" && !url ? "Uploads are saved on this computer until Cloudinary is set up." : "", state.storage === "local" && !url ? "warn" : "");
+        const localOnly = state.storage === "local" && !url;
+        const localNote = isVideo ? "Video uploads need Cloudinary. You can still use a link." : "Uploads are saved on this computer until Cloudinary is set up.";
+        setNote(localOnly ? localNote : "", localOnly ? "warn" : "");
       }
     };
   }
@@ -558,6 +623,7 @@
   const techInput = createTagInput(qs("#techInput"), () => projectChanged());
   const highlightsInput = createListEditor(qs("#highlightsEditor"), () => projectChanged(), "e.g. Predicts delays with XGBoost and explains each prediction with SHAP.");
   const projectImage = createDropzone(qs("#projectImage"), () => projectChanged());
+  const projectVideo = createDropzone(qs("#projectVideo"), () => projectChanged(), { kind: "video" });
   let editingProject = null;
   let slugTouched = false;
 
@@ -585,6 +651,7 @@
       live: v("live"),
       demo: v("demo"),
       image: projectImage.get(),
+      video: projectVideo.get(),
       icon: pf.elements.icon.value || "i-code",
       hue: Number(pf.elements.hue.value),
       order: editingProject ? editingProject.order : Math.max(-1, ...state.projects.map((p) => p.order ?? 0)) + 1,
@@ -597,6 +664,7 @@
     pf.elements.about.value = (p.about || []).join("\n");
     highlightsInput.set(p.highlights || []);
     projectImage.set(p.image || "");
+    projectVideo.set(p.video || "");
     pf.elements.hue.value = Number.isFinite(Number(p.hue)) ? p.hue : 190;
     pf.elements.showOnHome.checked = Boolean(p.showOnHome);
     techInput.set(p.tech || []);
@@ -614,7 +682,11 @@
     qsa(".swatch-btn", pf).forEach((b) => b.classList.toggle("is-active", Number(b.dataset.hue) === hue));
     updateCounters(pf);
     const preview = { ...p, name: p.name || "Project name", tagline: p.tagline || "Your tagline appears here.", slug: p.slug || "project" };
+    const oldVideo = qs("#projectPreview video");
     qs("#projectPreview").innerHTML = projectCard(preview);
+    // Keep the playing video when only the text changed, so it doesn't restart on every keystroke.
+    const newVideo = qs("#projectPreview video");
+    if (oldVideo && newVideo && oldVideo.dataset.src === newVideo.dataset.src) newVideo.replaceWith(oldVideo);
     qsa("#projectPreview .reveal").forEach((el) => el.classList.add("is-visible"));
   }
 

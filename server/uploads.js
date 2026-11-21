@@ -81,4 +81,20 @@ async function storeImage(buffer) {
 
 const uploadStorage = () => (cloudinaryConfig() ? "cloudinary" : "local");
 
-module.exports = { storeImage, uploadStorage, UploadError, MAX_BYTES };
+/** Signed parameters that let the dashboard upload one video straight to Cloudinary (valid for about an hour).
+    Only video formats are allowed, so the signature can't be reused for anything else. */
+function videoUploadSignature() {
+  const config = cloudinaryConfig();
+  if (!config) return null;
+  const params = {
+    allowed_formats: "mp4,webm,mov",
+    folder: process.env.CLOUDINARY_FOLDER || "portfolio",
+    timestamp: Math.floor(Date.now() / 1000)
+  };
+  return {
+    uploadUrl: `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/video/upload`,
+    fields: { ...params, api_key: config.apiKey, signature: signParams(params, config.apiSecret) }
+  };
+}
+
+module.exports = { storeImage, uploadStorage, videoUploadSignature, UploadError, MAX_BYTES };

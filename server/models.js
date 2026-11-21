@@ -6,6 +6,7 @@ const projectSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     tagline: { type: String, required: true, trim: true },
     image: { type: String, default: "" },
+    video: { type: String, default: "" },   // optional looping cover video; plays instead of the image
     about: { type: [String], default: [] },
     highlights: { type: [String], default: [] },
     tech: { type: [String], default: [] },

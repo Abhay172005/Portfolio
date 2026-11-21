@@ -229,11 +229,31 @@ function chips(list, max = Infinity) {
   return shown + (extra > 0 ? `<span class="chip chip--more">+${extra}</span>` : "");
 }
 
+/* A Cloudinary video's first frame as a still image (shown until the video plays, and instead of it for
+   reduced motion). Other video links have no poster, so the project's image is used if it has one. */
+function videoPoster(url) {
+  const at = url.indexOf("/video/upload/");
+  if (at < 0 || !url.includes("res.cloudinary.com")) return "";
+  const rest = url.slice(at + "/video/upload/".length).split("/");
+  if (!/^v\d+$/.test(rest[0]) && rest[0].includes("_")) rest.shift();   // drop the video's own settings
+  return `${url.slice(0, at)}/video/upload/so_0,q_auto,c_limit,w_1280/${rest.join("/").replace(/\.[a-z0-9]+$/i, ".jpg")}`;
+}
+
 function cover(p, wide = false) {
-  const inner = p.image
-    ? `<img src="${esc(p.image)}" alt="${esc(p.name)}">`
-    : `<span class="cover__file"><i></i><i></i><i></i>${esc(p.slug)}</span>
+  const art = `<span class="cover__file"><i></i><i></i><i></i>${esc(p.slug)}</span>
        <span class="cover__art">${icon(p.icon, "cover__glyph")}<span class="cover__name">${esc(p.name)}</span></span>`;
+  let inner;
+  if (p.video) {
+    // Loaded and played by coverVideos() only while on screen; muted + playsinline so phones allow autoplay.
+    const poster = videoPoster(p.video) || p.image || "";
+    inner = `<video class="cover__video" muted loop playsinline preload="none" disablepictureinpicture
+      data-src="${esc(p.video)}" data-fallback="${esc(p.image || "")}"${poster ? ` poster="${esc(poster)}"` : ""}
+      aria-label="${esc(p.name)}"></video>`;
+  } else if (p.image) {
+    inner = `<img src="${esc(p.image)}" alt="${esc(p.name)}">`;
+  } else {
+    inner = art;
+  }
   return `<div class="cover${wide ? " cover--wide" : ""}" style="--h:${p.hue}">${inner}</div>`;
 }
 
@@ -648,6 +668,62 @@ document.addEventListener("transitionend", (e) => {
     cancelAnimationFrame(raf);
     if (!document.hidden) raf = requestAnimationFrame(step);
   });
+})();
+
+/* ---------- Cover videos ----------
+   A project with a cover video shows it in place of the image, muted and looping. Each video only
+   downloads once its card is near the screen, and pauses while off screen. Visitors who prefer
+   reduced motion get its still first frame. If a video can't load, the project's image is shown. */
+(function coverVideos() {
+  const fallBack = (video) => {
+    const src = video.dataset.fallback;
+    if (src) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = video.getAttribute("aria-label") || "";
+      video.replaceWith(img);
+    } else {
+      video.remove();   // the cover's coloured background shows instead
+    }
+  };
+  const load = (video) => { if (!video.getAttribute("src")) video.src = video.dataset.src; };
+
+  const watcher = "IntersectionObserver" in window
+    ? new IntersectionObserver((entries) => {
+        for (const { target: video, isIntersecting } of entries) {
+          if (isIntersecting) {
+            load(video);
+            video.play().catch(() => {});   // the browser may refuse autoplay; the poster stays then
+          } else {
+            video.pause();
+          }
+        }
+      }, { rootMargin: "200px 0px" })
+    : null;
+
+  const setup = (video) => {
+    if (video.dataset.ready) return;
+    video.dataset.ready = "1";
+    video.muted = true;   // the attribute alone isn't always enough for autoplay
+    video.addEventListener("error", () => fallBack(video));
+    if (reducedMotion) {
+      // No motion: show a still frame (the poster, or the video's first frame).
+      if (!video.poster) { video.preload = "metadata"; load(video); }
+      return;
+    }
+    if (watcher) watcher.observe(video);
+    else { load(video); video.play().catch(() => {}); }
+  };
+
+  const scan = (root) => {
+    if (root.matches?.("video.cover__video")) setup(root);
+    root.querySelectorAll?.("video.cover__video").forEach(setup);
+  };
+  scan(document);
+  // Cards are re-rendered when live data arrives (and in the admin preview), so watch for new ones.
+  new MutationObserver((changes) => {
+    for (const change of changes) change.addedNodes.forEach((node) => node.nodeType === 1 && scan(node));
+  }).observe(document.body, { childList: true, subtree: true });
 })();
 
 /* ---------- 3D: project screenshot in a browser window (project page) ----------

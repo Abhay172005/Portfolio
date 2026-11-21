@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20261152" />
-  <link rel="stylesheet" href="admin.css?v=20261135" />
+  <link rel="stylesheet" href="style.css?v=20261153" />
+  <link rel="stylesheet" href="admin.css?v=20261153" />
 </head>
 <body class="admin">
   <!-- Admin-only icons (the shared sprite comes from script.js) -->
@@ -241,7 +241,7 @@
                   <span class="group__icon"><svg class="icon"><use href="#a-palette" /></svg></span>
                   <div>
                     <h3 class="group__title" id="groupLook">Appearance</h3>
-                    <p class="group__desc">A screenshot works best. Without one, the card shows the icon on a coloured background.</p>
+                    <p class="group__desc">A screenshot works best; add a short screen recording to show animation. Without either, the card shows the icon on a coloured background.</p>
                   </div>
                 </header>
                 <div class="field">
@@ -267,6 +267,31 @@
                       </span>
                     </div>
                     <input type="text" class="dropzone__url" placeholder="https://…" aria-label="Cover image link" hidden />
+                  </div>
+                </div>
+                <div class="field">
+                  <span class="field__label">Cover video <span class="field__hint">Optional · plays on a loop instead of the image</span></span>
+                  <div class="dropzone" id="projectVideo">
+                    <input type="hidden" name="video" />
+                    <input type="file" class="dropzone__file" accept="video/mp4,video/webm,video/quicktime" hidden />
+                    <div class="dropzone__area" tabindex="0" role="button" aria-label="Upload a cover video">
+                      <div class="dropzone__empty">
+                        <span class="dropzone__icon"><svg class="icon"><use href="#a-upload" /></svg></span>
+                        <strong>Drop a screen recording here, or <span class="accent">browse</span></strong>
+                        <small>MP4, WebM or MOV, up to 20 seconds and 50 MB. It plays muted, on a loop.</small>
+                      </div>
+                      <video class="dropzone__img" muted loop playsinline autoplay hidden></video>
+                      <div class="dropzone__progress" hidden><span></span></div>
+                    </div>
+                    <div class="dropzone__bar">
+                      <span class="dropzone__note" aria-live="polite"></span>
+                      <span class="dropzone__actions">
+                        <button type="button" class="link-btn" data-dz="url">Use a link instead</button>
+                        <button type="button" class="link-btn" data-dz="replace" hidden>Replace</button>
+                        <button type="button" class="link-btn link-btn--danger" data-dz="remove" hidden>Remove</button>
+                      </span>
+                    </div>
+                    <input type="text" class="dropzone__url" placeholder="https://….mp4" aria-label="Cover video link" hidden />
                   </div>
                 </div>
                 <div class="field">
@@ -401,7 +426,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="markdown.js?v=20261121"></script>
-  <script src="script.js?v=20261152"></script>
-  <script src="admin.js?v=20261137"></script>
+  <script src="script.js?v=20261153"></script>
+  <script src="admin.js?v=20261153"></script>
 </body>
 </html>

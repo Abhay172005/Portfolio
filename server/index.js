@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const { Project, Admin, Post } = require("./models");
 const { importRepo, listRepos, GitHubError } = require("./github");
-const { storeImage, uploadStorage, UploadError, MAX_BYTES } = require("./uploads");
+const { storeImage, uploadStorage, videoUploadSignature, UploadError, MAX_BYTES } = require("./uploads");
 
 const app = express();
 const publicDir = path.join(__dirname, "..", "public");
@@ -81,6 +81,7 @@ function cleanProject(body) {
     name: String(body.name || "").trim(),
     tagline: String(body.tagline || "").trim(),
     image: String(body.image || "").trim(),
+    video: String(body.video || "").trim(),
     about: asList(body.about),
     highlights: asList(body.highlights),
     tech: asList(body.tech),
@@ -159,6 +160,14 @@ app.delete("/api/admin/projects/:id", requireAdmin, async (req, res, next) => {
 
 /* ---------- Image uploads ---------- */
 app.get("/api/admin/upload-status", requireAdmin, (_req, res) => res.json({ storage: uploadStorage() }));
+
+// Videos are too big to pass through this server (Vercel caps requests at 4.5 MB), so the dashboard
+// uploads them straight to Cloudinary using a short-lived signature from here.
+app.get("/api/admin/video-signature", requireAdmin, (_req, res) => {
+  const signed = videoUploadSignature();
+  if (!signed) return res.status(503).json({ error: "Video uploads need Cloudinary. Add CLOUDINARY_URL to your settings." });
+  res.json(signed);
+});
 
 app.post("/api/admin/upload", requireAdmin, express.raw({ type: () => true, limit: MAX_BYTES }), async (req, res, next) => {
   try { res.status(201).json(await storeImage(req.body)); } catch (error) { next(error); }
