@@ -7,9 +7,12 @@ const GITHUB_USER = "Abhay172005";
 const repo = (name) => `https://github.com/${GITHUB_USER}/${name}`;
 
 /* ---------- Projects ----------
-   Order here is the order shown. The first FEATURED_COUNT appear on the home page.
+   Projects are managed in the dashboard. This built-in list is the fallback when the database can't be
+   reached, and what `npm run seed` loads into an empty database. Without "show on home page" choices,
+   the first FEATURED_COUNT appear on the home page.
    Optional fields per project:
      image: "https://…"              screenshot that replaces the generated cover
+     video: "https://….mp4"          short looping clip shown instead of the image
      live:  "https://…"              adds a Live button / icon
      demo:  "https://youtube.com/…"  adds a Demo button / icon
 */
@@ -210,6 +213,41 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 document.documentElement.classList.add("js");
 
+/* ---------- Content from the dashboard ----------
+   Projects, the home intro and the resume also have a built-in copy in the site, but visitors should see
+   the version saved in the dashboard. So the built-in copy doesn't flash up first:
+   - the last version the server sent is remembered in the browser and shown at once on later visits
+     (and only redrawn if it has changed since);
+   - on a first visit, that part of the page waits (placeholders, or hidden) until the server answers;
+   - if the server is slow or down, the built-in copy is shown after a few seconds instead. */
+const remembered = {
+  get(key) { try { const v = localStorage.getItem(`site:${key}`); return v === null ? undefined : JSON.parse(v); } catch { return undefined; } },
+  set(key, value) { try { localStorage.setItem(`site:${key}`, JSON.stringify(value)); } catch { /* storage unavailable */ } }
+};
+
+/** show(value, firstPaint) draws saved content; wait() / ready() bracket a first visit with nothing remembered.
+    pick(json) turns the server's reply into the value, or null when nothing has been saved in the dashboard. */
+function liveContent(key, url, { pick, show, wait, ready, fallbackAfter = 4000 }) {
+  const known = remembered.get(key);   // undefined: never fetched in this browser
+  let drawn = known === undefined ? undefined : JSON.stringify(known);
+  if (known === undefined) wait?.();
+  else if (known !== null) show(known, true);
+  let done = false;
+  const finish = () => { if (!done) { done = true; ready?.(); } };
+  const timer = setTimeout(finish, fallbackAfter);
+  fetch(url, { headers: { Accept: "application/json" } })
+    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then((json) => {
+      const value = pick(json);
+      remembered.set(key, value);
+      const now = JSON.stringify(value);
+      if (value !== null && now !== drawn) show(value, false);
+      drawn = now;
+    })
+    .catch(() => { /* no API (e.g. static hosting): the built-in copy is used */ })
+    .finally(() => { clearTimeout(timer); finish(); });
+}
+
 /* ---------- Shared render helpers ---------- */
 function chip(name) {
   const logo = techLogo(name);
@@ -239,8 +277,6 @@ function videoPoster(url) {
 }
 
 function cover(p, wide = false) {
-  const art = `<span class="cover__file"><i></i><i></i><i></i>${esc(p.slug)}</span>
-       <span class="cover__art">${icon(p.icon, "cover__glyph")}<span class="cover__name">${esc(p.name)}</span></span>`;
   let inner;
   if (p.video) {
     // Loaded and played by coverVideos() only while on screen; muted + playsinline so phones allow autoplay.
@@ -251,7 +287,9 @@ function cover(p, wide = false) {
   } else if (p.image) {
     inner = `<img src="${esc(p.image)}" alt="${esc(p.name)}">`;
   } else {
-    inner = art;
+    // No screenshot: a generated cover with the project's icon and name.
+    inner = `<span class="cover__file"><i></i><i></i><i></i>${esc(p.slug)}</span>
+       <span class="cover__art">${icon(p.icon, "cover__glyph")}<span class="cover__name">${esc(p.name)}</span></span>`;
   }
   return `<div class="cover${wide ? " cover--wide" : ""}" style="--h:${p.hue}">${inner}</div>`;
 }
@@ -275,7 +313,7 @@ function projectCard(p) {
     </a>`;
 }
 
-/* ---------- Home: featured projects ---------- */
+/* ---------- Projects: home grid, projects page and each project's page ---------- */
 const featuredGrid = $("#featuredGrid");
 const projectGrid = $("#projectGrid");
 const detail = $("#projectDetail");
@@ -291,7 +329,7 @@ function renderDetail() {
   } else {
     document.title = `${p.name} — Abhay Mittal`;
     const btn = (href, cls, ic, label) =>
-      `<a class="btn ${cls}" href="${href}" target="_blank" rel="noopener noreferrer">${icon(ic)} ${label}</a>`;
+      `<a class="btn ${cls}" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${icon(ic)} ${label}</a>`;
     detail.innerHTML = `
       ${showcase(p)}
       <h1 class="detail__title">${esc(p.name)}</h1>
@@ -330,22 +368,31 @@ function renderProjects() {
   renderDetail();
 }
 
-renderProjects();
+/* Grey placeholder cards shown on a first visit while the projects load. */
+function showProjectPlaceholders() {
+  const card = `<div class="project project--skeleton" aria-hidden="true"><div class="cover"></div>
+    <div class="project__body"><span class="sk sk--title"></span><span class="sk"></span><span class="sk sk--short"></span></div></div>`;
+  if (featuredGrid) featuredGrid.innerHTML = card.repeat(FEATURED_COUNT);
+  if (projectGrid) projectGrid.innerHTML = card.repeat(PROJECTS.length);
+}
 
-/* Use database-managed projects when the portfolio is served with the admin API.
-   The embedded list above remains a safe fallback for static hosting. */
-(async function loadManagedProjects() {
-  try {
-    const res = await fetch("/api/projects", { headers: { Accept: "application/json" } });
-    if (!res.ok) return;
-    const managedProjects = await res.json();
-    if (!Array.isArray(managedProjects) || !managedProjects.length) return;
-    PROJECTS.splice(0, PROJECTS.length, ...managedProjects);
-    renderProjects();
-    reveal();
-  } catch {
-    // Static deployments deliberately continue using the embedded project data.
-  }
+/* The projects saved in the dashboard; the embedded list above is the fallback (and seeds the database). */
+(function loadProjects() {
+  if (!featuredGrid && !projectGrid && !detail) return;
+  const builtIn = PROJECTS.slice();
+  let drawn = false;
+  const draw = (list) => { PROJECTS.splice(0, PROJECTS.length, ...list); renderProjects(); drawn = true; };
+  liveContent("projects", "/api/projects", {
+    pick: (data) => (Array.isArray(data) && data.length ? data : null),
+    show(list, firstPaint) {
+      // A remembered list can be older than a newly added project; that project's page waits for the fresh one.
+      if (firstPaint && detail && !list.some((p) => p.slug === new URLSearchParams(location.search).get("p"))) return;
+      draw(list);
+      if (!firstPaint) reveal();
+    },
+    wait: showProjectPlaceholders,
+    ready() { if (!drawn) { draw(builtIn); reveal(); } }
+  });
 })();
 
 /* ---------- Blog (list on blog.html, single post on post.html) ---------- */
@@ -447,20 +494,17 @@ function renderResume(r) {
     section("Activities", stack(activities)),
     section("Technical Skills", skills.length ? `<div class="skillgrid">${skills.join("")}</div>` : "")
   ].join("");
-  reveal(body);
 }
 
-(async function loadResume() {
-  if (!$("#resumeBody")) return;
-  try {
-    const res = await fetch("/api/resume", { headers: { Accept: "application/json" } });
-    if (!res.ok) return;
-    const { resume } = await res.json();
-    if (resume) renderResume(resume);
-  } catch {
-    // Without the API (e.g. static hosting) the built-in resume stays.
-  }
-})();
+if ($("#resumeBody")) {
+  liveContent("resume", "/api/resume", {
+    pick: (data) => data.resume ?? null,
+    show(resume, firstPaint) { renderResume(resume); if (!firstPaint) reveal($("#resumeBody")); },
+    wait: () => document.documentElement.classList.add("resume-pending"),
+    ready: () => document.documentElement.classList.remove("resume-pending"),
+    fallbackAfter: 1500
+  });
+}
 
 /* ---------- Profile: home intro, "what I do" cards and social links ----------
    The pages ship with these written into their HTML. Once a profile is saved in the dashboard, it
@@ -480,7 +524,6 @@ function applyProfile(p) {
     focus.hidden = !p.focus?.length;
     focus.innerHTML = (p.focus || []).map((f) => `
       <article class="focus__card reveal">${icon(f.icon || "i-code", "accent")}<h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></article>`).join("");
-    reveal(focus);
   }
   // Hero buttons and footer icons are matched by their icon; an empty link hides that button.
   const s = p.socials || {};
@@ -493,16 +536,14 @@ function applyProfile(p) {
   });
 }
 
-(async function loadProfile() {
-  try {
-    const res = await fetch("/api/profile", { headers: { Accept: "application/json" } });
-    if (!res.ok) return;
-    const { profile } = await res.json();
-    if (profile) applyProfile(profile);
-  } catch {
-    // Without the API (e.g. static hosting) the built-in content stays.
-  }
-})();
+// On the home page the intro waits (briefly hidden) on a first visit; elsewhere only footer links change.
+liveContent("profile", "/api/profile", {
+  pick: (data) => data.profile ?? null,
+  show(profile, firstPaint) { applyProfile(profile); if (!firstPaint && $(".focus")) reveal($(".focus")); },
+  wait: () => { if ($(".hero")) document.documentElement.classList.add("profile-pending"); },
+  ready: () => document.documentElement.classList.remove("profile-pending"),
+  fallbackAfter: 1500
+});
 
 /* ---------- Mobile nav ---------- */
 const navToggle = $("#navToggle");
@@ -545,7 +586,7 @@ document.addEventListener("transitionend", (e) => {
   if (reducedMotion || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
   if (document.body.classList.contains("admin")) return; // keep the dashboard's forms still
   // Project, focus and blog cards, resume and project-page cards, and the GitHub box.
-  const CARDS = ".project, .focus__card, .post-card, .card, .gh";
+  const CARDS = ".project:not(.project--skeleton), .focus__card, .post-card, .card, .gh";
   let active = null, last = null, raf = 0;
 
   const update = () => {

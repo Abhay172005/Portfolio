@@ -529,6 +529,66 @@ main {
   color: var(--accent);
 }
 
+/* ============ Loading states (script.js "Content from the dashboard") ============ */
+/* First visit only: the home intro / resume stay invisible until the saved version arrives (at most 1.5 s),
+   so the built-in copy never flashes up first. */
+.hero__text,
+.hero__photo,
+.focus,
+#resumeBody {
+  transition: opacity 0.25s ease;
+}
+
+.profile-pending .hero__text,
+.profile-pending .hero__photo,
+.profile-pending .focus,
+.resume-pending #resumeBody {
+  opacity: 0;
+}
+
+/* Placeholder project cards while the projects load. */
+.project--skeleton .cover::before,
+.project--skeleton .cover::after {
+  display: none;
+}
+
+.project--skeleton .cover,
+.sk {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.07) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.project--skeleton .project__body {
+  gap: 10px;
+}
+
+.sk {
+  display: block;
+  height: 11px;
+  border-radius: 6px;
+}
+
+.sk--title {
+  width: 45%;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.sk--short {
+  width: 62%;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
 /* Anything hidden with the hidden attribute stays hidden, whatever its display (e.g. an empty social link). */
 [hidden] {
   display: none !important;
