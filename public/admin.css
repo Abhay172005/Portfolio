@@ -772,6 +772,10 @@
 .rep-links__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; gap: 8px; align-items: center; }
 .rep-links__add { justify-self: start; display: inline-flex; align-items: center; gap: 6px; }
 
+/* ---------- Profile ---------- */
+.dropzone--photo .dropzone__area { width: min(220px, 100%); aspect-ratio: 1; }
+.dropzone--photo .dropzone__img { object-position: center; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1023px) {
   .editor__grid, .post-layout { grid-template-columns: 1fr; }

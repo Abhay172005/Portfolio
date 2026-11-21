@@ -6,8 +6,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
-const { Project, Admin, Post, Resume, ResumePdf } = require("./models");
+const { Project, Admin, Post, Resume, ResumePdf, Profile } = require("./models");
 const DEFAULT_RESUME = require("./resume-default");
+const DEFAULT_PROFILE = require("./profile-default");
 const { importRepo, listRepos, GitHubError } = require("./github");
 const { storeImage, uploadStorage, videoUploadSignature, UploadError, MAX_BYTES } = require("./uploads");
 
@@ -338,9 +339,67 @@ app.get("/resume.pdf", async (req, res, next) => {
   }
 });
 
+/* ---------- Profile (home page hero, "what I do" cards, social links) ---------- */
+const FOCUS_ICONS = ["i-code", "i-cpu", "i-activity", "i-file", "i-eye", "i-search", "i-truck"];
+
+function cleanProfile(body) {
+  const text = (v, max = 300) => String(v ?? "").trim().slice(0, max);
+  const link = (v) => { const s = text(v, 300); return /^https?:\/\//i.test(s) ? s : ""; };
+  const s = body.socials || {};
+  return {
+    eyebrow: text(body.eyebrow, 40),
+    name: text(body.name, 60),
+    tagline: text(body.tagline, 120),
+    bio: text(body.bio, 600),
+    photo: text(body.photo, 500),
+    focus: (Array.isArray(body.focus) ? body.focus : []).slice(0, 4)
+      .map((f) => ({ icon: FOCUS_ICONS.includes(f?.icon) ? f.icon : "i-code", title: text(f?.title, 40), text: text(f?.text, 160) }))
+      .filter((f) => f.title || f.text),
+    socials: {
+      github: link(s.github),
+      linkedin: link(s.linkedin),
+      x: link(s.x),
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text(s.email, 120)) ? text(s.email, 120) : ""
+    }
+  };
+}
+const profileOut = (doc) => {
+  const { eyebrow, name, tagline, bio, photo, focus, socials } = doc;
+  return { eyebrow, name, tagline, bio, photo, focus, socials };
+};
+
+// Public: the saved profile (null until it's first saved; the pages then keep their built-in content).
+app.get("/api/profile", async (_req, res, next) => {
+  try {
+    const doc = await Profile.findOne({ key: "main" }).lean();
+    res.json({ profile: doc ? profileOut(doc) : null });
+  } catch (error) { next(error); }
+});
+
+app.get("/api/admin/profile", requireAdmin, async (_req, res, next) => {
+  try {
+    const doc = await Profile.findOne({ key: "main" }).lean();
+    res.json({ profile: doc ? profileOut(doc) : DEFAULT_PROFILE, saved: Boolean(doc), updatedAt: doc?.updatedAt || null });
+  } catch (error) { next(error); }
+});
+
+app.put("/api/admin/profile", requireAdmin, async (req, res, next) => {
+  try {
+    const profile = cleanProfile(req.body);
+    if (!profile.name) return res.status(400).json({ error: "Your name can't be empty." });
+    const doc = await Profile.findOneAndUpdate({ key: "main" }, { $set: profile }, { upsert: true, new: true }).lean();
+    res.json({ profile: profileOut(doc), saved: true, updatedAt: doc.updatedAt });
+  } catch (error) { next(error); }
+});
+
 // On Vercel the CDN serves public/ and only /api reaches this app; locally Express serves both.
 app.use(express.static(publicDir, { dotfiles: "ignore", index: "index.html" }));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads"), { dotfiles: "ignore" }));
+// Anything else: the site's own "page not found" page (Vercel serves public/404.html the same way).
+app.use((req, res) => {
+  if (req.path.startsWith("/api/")) return res.status(404).json({ error: "Not found." });
+  res.status(404).sendFile(path.join(publicDir, "404.html"));
+});
 app.use((error, req, res, _next) => {
   if (error?.code === 11000) return res.status(409).json({ error: "That slug is already used. Pick a different one." });
   if (error instanceof GitHubError || error instanceof UploadError) return res.status(error.status).json({ error: error.message });

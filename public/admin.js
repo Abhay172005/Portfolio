@@ -433,7 +433,7 @@
   /* ---------- Views & routing ---------- */
   const loginView = qs("#loginView");
   const dashboardView = qs("#dashboardView");
-  const panels = ["#projectsPanel", "#blogPanel", "#resumePanel", "#projectEditor", "#postEditor"].map((s) => qs(s));
+  const panels = ["#projectsPanel", "#blogPanel", "#resumePanel", "#profilePanel", "#projectEditor", "#postEditor"].map((s) => qs(s));
   let currentRoute = "";
   let ignoreNextHash = false;
 
@@ -449,14 +449,16 @@
   async function enterDashboard(email) {
     state.email = email;
     qs("#whoami").textContent = `Signed in as ${email}`;
-    const [projects, posts, resume] = await Promise.all([
+    const [projects, posts, resume, profile] = await Promise.all([
       api("/api/admin/projects"),
       api("/api/admin/posts"),
-      api("/api/admin/resume").catch(() => null)
+      api("/api/admin/resume").catch(() => null),
+      api("/api/admin/profile").catch(() => null)
     ]);
     state.projects = projects;
     state.posts = posts;
     state.resume = resume;
+    state.profile = profile;
     state.ready = true;
     api("/api/admin/upload-status").then((s) => { state.storage = s.storage; }).catch(() => {});
     loginView.hidden = true;
@@ -479,7 +481,7 @@
     setDirty(false);
     currentRoute = `#${hash}`;
     const [kind, id] = hash.split("/");
-    const tab = kind === "blog" || kind === "post" ? "blog" : kind === "resume" ? "resume" : "projects";
+    const tab = kind === "blog" || kind === "post" ? "blog" : ["resume", "profile"].includes(kind) ? kind : "projects";
     qsa(".tab").forEach((t) => {
       const active = t.dataset.tab === tab;
       t.classList.toggle("is-active", active);
@@ -495,6 +497,7 @@
     else if (kind === "post") openPostEditor(id || "new");
     else if (kind === "blog") qs("#blogPanel").hidden = false;
     else if (kind === "resume") openResume();
+    else if (kind === "profile") openProfile();
     else qs("#projectsPanel").hidden = false;
     if (inEditor) window.scrollTo({ top: 0 });
   }
@@ -1259,6 +1262,13 @@
           fields[f.name] = tags.get;
         } else if (f.type === "links") {
           fields[f.name] = linksField(wrap, data[f.name], onChange);
+        } else if (f.type === "select") {
+          const select = document.createElement("select");
+          select.innerHTML = f.options.map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`).join("");
+          select.value = data[f.name] || f.options[0][0];
+          select.addEventListener("change", onChange);
+          wrap.append(select);
+          fields[f.name] = () => select.value;
         } else {
           const input = document.createElement("input");
           input.autocomplete = "off";
@@ -1288,6 +1298,7 @@
         qs('[data-act="up"]', el).disabled = i === 0;
         qs('[data-act="down"]', el).disabled = i === items.length - 1;
       });
+      qs(".list-editor__add", group).hidden = Boolean(section.max) && items.length >= section.max;
     };
 
     list.addEventListener("click", (e) => {
@@ -1445,6 +1456,69 @@
       }
     });
   })();
+
+  /* ---------- Profile (home page intro, "what I do" cards, social links) ---------- */
+  const prf = qs("#profileForm");
+  const profilePhoto = createDropzone(qs("#profilePhoto"), () => setDirty(true));
+  const focusEditor = createRepeater({
+    key: "focus", title: "What I do", icon: "a-layers", add: "Add card", blank: "New card", max: 4,
+    desc: "The cards under your intro on the home page (up to four).",
+    fields: [
+      { name: "title", label: "Title", placeholder: "Full-Stack Dev" },
+      { name: "text", label: "Description", placeholder: "React, Node, Express, MongoDB — end-to-end product engineering." },
+      { name: "icon", label: "Icon", type: "select", options: ICONS }
+    ]
+  }, () => setDirty(true));
+  qs("#focusSection").replaceWith(focusEditor.el);
+  prf.addEventListener("input", () => { setDirty(true); updateCounters(prf); });
+
+  const SOCIALS = ["github", "linkedin", "x", "email"];
+
+  function openProfile() {
+    qs("#profilePanel").hidden = false;
+    const r = state.profile;
+    const p = r?.profile || {};
+    ["eyebrow", "name", "tagline", "bio"].forEach((k) => { prf.elements[k].value = p[k] || ""; });
+    SOCIALS.forEach((k) => { prf.elements[k].value = p.socials?.[k] || ""; });
+    profilePhoto.set(p.photo || "");
+    focusEditor.set(p.focus || []);
+    updateCounters(prf);
+    requestAnimationFrame(() => growAll(prf));
+    qs("#profileHint").textContent = !r
+      ? "Couldn't load your profile. Refresh the page to try again."
+      : r.saved
+        ? `Last saved ${formatDate(r.updatedAt)}. Changes appear on your site after you save.`
+        : "This is your current home page intro. Edit anything and press Save; from then on it's managed here.";
+    setDirty(false);
+  }
+
+  qs("#saveProfile").addEventListener("click", async () => {
+    const v = (k) => prf.elements[k].value.trim();
+    if (!v("name")) {
+      prf.elements.name.classList.add("is-invalid");
+      prf.elements.name.focus();
+      toast("Add your name before saving.", true);
+      return;
+    }
+    prf.elements.name.classList.remove("is-invalid");
+    const body = {
+      eyebrow: v("eyebrow"), name: v("name"), tagline: v("tagline"), bio: v("bio"),
+      photo: profilePhoto.get(),
+      focus: focusEditor.get(),
+      socials: Object.fromEntries(SOCIALS.map((k) => [k, v(k)]))
+    };
+    const button = qs("#saveProfile");
+    busy(button, true);
+    try {
+      state.profile = await api("/api/admin/profile", { method: "PUT", body });
+      openProfile();   // show exactly what was saved (e.g. a link that wasn't a web address is cleared)
+      toast("Profile saved.");
+    } catch (error) {
+      toast(error.message, true);
+    } finally {
+      busy(button, false);
+    }
+  });
 
   /* ---------- Start ---------- */
   (async function boot() {

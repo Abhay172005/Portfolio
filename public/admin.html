@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20261154" />
-  <link rel="stylesheet" href="admin.css?v=20261156" />
+  <link rel="stylesheet" href="style.css?v=20261159" />
+  <link rel="stylesheet" href="admin.css?v=20261158" />
 </head>
 <body class="admin">
   <!-- Admin-only icons (the shared sprite comes from script.js) -->
@@ -105,7 +105,7 @@
           <a class="tab" href="#projects" data-tab="projects">Projects <span class="tab__count" id="tabProjects"></span></a>
           <a class="tab" href="#blog" data-tab="blog">Blog <span class="tab__count" id="tabPosts"></span></a>
           <a class="tab" href="#resume" data-tab="resume">Resume</a>
-        </nav>
+          <a class="tab" href="#profile" data-tab="profile">Profile</a>        </nav>
 
         <!-- Projects list -->
         <section id="projectsPanel" class="panel" hidden>
@@ -170,6 +170,87 @@
           </div>
         </section>
 
+        <!-- Profile: home page hero, "what I do" cards, social links -->
+        <section id="profilePanel" class="panel" hidden>
+          <p class="hint resume-hint" id="profileHint"></p>
+          <div class="resume-bar">
+            <span class="dirty-flag" hidden>Unsaved changes</span>
+            <a class="btn btn--ghost" href="index.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-arrow" /></svg> View home page</a>
+            <button class="btn btn--primary" type="button" id="saveProfile"><svg class="icon"><use href="#a-check" /></svg> Save profile</button>
+          </div>
+
+          <form id="profileForm" class="resume-editor" novalidate>
+            <section class="card group" aria-labelledby="groupHero">
+              <header class="group__head">
+                <span class="group__icon"><svg class="icon"><use href="#a-type" /></svg></span>
+                <div>
+                  <h3 class="group__title" id="groupHero">Intro</h3>
+                  <p class="group__desc">The first thing visitors see on your home page.</p>
+                </div>
+              </header>
+              <div class="two">
+                <label class="field"><span class="field__label">Greeting</span>
+                  <input name="eyebrow" maxlength="40" placeholder="Hey, I'm" autocomplete="off" /></label>
+                <label class="field"><span class="field__label">Your name <b class="req" aria-hidden="true">*</b></span>
+                  <input name="name" maxlength="60" placeholder="Abhay Mittal" autocomplete="off" />
+                  <span class="field__help">A teal dot is added after it, as now.</span></label>
+              </div>
+              <label class="field"><span class="field__label">Tagline <span class="field__count" data-count="tagline" data-max="60"></span></span>
+                <input name="tagline" maxlength="120" placeholder="I build full-stack products & applied AI." autocomplete="off" /></label>
+              <label class="field"><span class="field__label">About you <span class="field__count" data-count="bio" data-max="280"></span></span>
+                <textarea name="bio" rows="3" maxlength="600" data-autogrow placeholder="A few sentences about what you do and what you're focused on."></textarea></label>
+              <div class="field">
+                <span class="field__label">Photo</span>
+                <div class="dropzone dropzone--photo" id="profilePhoto">
+                  <input type="hidden" name="photo" />
+                  <input type="file" class="dropzone__file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" hidden />
+                  <div class="dropzone__area" tabindex="0" role="button" aria-label="Upload a profile photo">
+                    <div class="dropzone__empty">
+                      <span class="dropzone__icon"><svg class="icon"><use href="#a-upload" /></svg></span>
+                      <strong>Drop a photo, or <span class="accent">browse</span></strong>
+                      <small>A square photo works best.</small>
+                    </div>
+                    <img class="dropzone__img" alt="Profile photo preview" hidden />
+                    <div class="dropzone__progress" hidden><span></span></div>
+                  </div>
+                  <div class="dropzone__bar">
+                    <span class="dropzone__note" aria-live="polite"></span>
+                    <span class="dropzone__actions">
+                      <button type="button" class="link-btn" data-dz="url">Use a link</button>
+                      <button type="button" class="link-btn" data-dz="replace" hidden>Replace</button>
+                      <button type="button" class="link-btn link-btn--danger" data-dz="remove" hidden>Remove</button>
+                    </span>
+                  </div>
+                  <input type="text" class="dropzone__url" placeholder="https://…" aria-label="Photo link" hidden />
+                </div>
+              </div>
+            </section>
+
+            <div id="focusSection"></div>
+
+            <section class="card group" aria-labelledby="groupSocials">
+              <header class="group__head">
+                <span class="group__icon"><svg class="icon"><use href="#a-link" /></svg></span>
+                <div>
+                  <h3 class="group__title" id="groupSocials">Social links</h3>
+                  <p class="group__desc">Used by the buttons on your home page and the icons in every page's footer. Leave one empty to hide it.</p>
+                </div>
+              </header>
+              <div class="two">
+                <label class="field"><span class="field__label">GitHub</span>
+                  <span class="input-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg><input name="github" type="url" placeholder="https://github.com/…" /></span></label>
+                <label class="field"><span class="field__label">LinkedIn</span>
+                  <span class="input-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-linkedin" /></svg><input name="linkedin" type="url" placeholder="https://www.linkedin.com/in/…" /></span></label>
+              </div>
+              <div class="two">
+                <label class="field"><span class="field__label">X (Twitter)</span>
+                  <span class="input-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-x" /></svg><input name="x" type="url" placeholder="https://x.com/…" /></span></label>
+                <label class="field"><span class="field__label">Email</span>
+                  <span class="input-icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-mail" /></svg><input name="email" type="email" placeholder="you@example.com" /></span></label>
+              </div>
+            </section>
+          </form>
+        </section>
         <!-- Project editor -->
         <section id="projectEditor" class="editor" hidden>
           <div class="editor__bar">
@@ -472,7 +553,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="markdown.js?v=20261121"></script>
-  <script src="script.js?v=20261154"></script>
-  <script src="admin.js?v=20261156"></script>
+  <script src="script.js?v=20261158"></script>
+  <script src="admin.js?v=20261158"></script>
 </body>
 </html>

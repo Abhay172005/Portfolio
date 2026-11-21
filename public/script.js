@@ -189,8 +189,7 @@ const SPRITE = `
   <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></symbol>
   <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></symbol>
-  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
-  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>  <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3z"/></symbol>
@@ -460,6 +459,48 @@ function renderResume(r) {
     if (resume) renderResume(resume);
   } catch {
     // Without the API (e.g. static hosting) the built-in resume stays.
+  }
+})();
+
+/* ---------- Profile: home intro, "what I do" cards and social links ----------
+   The pages ship with these written into their HTML. Once a profile is saved in the dashboard, it
+   replaces them: the intro and cards on the home page, and the social links on every page. */
+function applyProfile(p) {
+  if ($(".hero")) {
+    const set = (sel, value) => { const el = $(sel); if (el && value != null) el.textContent = value; };
+    set(".hero__text .eyebrow", p.eyebrow);
+    $(".hero__name").innerHTML = `${esc(p.name)}<span class="accent">.</span>`;
+    set(".hero__tagline", p.tagline);
+    set(".hero__bio", p.bio);
+    const photo = $(".hero__photo img");
+    if (photo && p.photo) { photo.src = p.photo; photo.alt = `Portrait of ${p.name}`; }
+  }
+  const focus = $(".focus");
+  if (focus) {
+    focus.hidden = !p.focus?.length;
+    focus.innerHTML = (p.focus || []).map((f) => `
+      <article class="focus__card reveal">${icon(f.icon || "i-code", "accent")}<h3>${esc(f.title)}</h3><p>${esc(f.text)}</p></article>`).join("");
+    reveal(focus);
+  }
+  // Hero buttons and footer icons are matched by their icon; an empty link hides that button.
+  const s = p.socials || {};
+  const links = { "i-github": s.github, "i-linkedin": s.linkedin, "i-x": s.x, "i-mail": s.email && `mailto:${s.email}` };
+  $$(".hero__actions a, .footer__socials a").forEach((a) => {
+    const id = a.querySelector("use")?.getAttribute("href")?.slice(1);
+    if (!(id in links)) return;
+    a.hidden = !links[id];
+    if (links[id]) a.href = links[id];
+  });
+}
+
+(async function loadProfile() {
+  try {
+    const res = await fetch("/api/profile", { headers: { Accept: "application/json" } });
+    if (!res.ok) return;
+    const { profile } = await res.json();
+    if (profile) applyProfile(profile);
+  } catch {
+    // Without the API (e.g. static hosting) the built-in content stays.
   }
 })();
 

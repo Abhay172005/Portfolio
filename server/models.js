@@ -69,10 +69,26 @@ const resumePdfSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+/* Home page hero, "what I do" cards and social links: one document (key "main"). */
+const profileSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, unique: true, default: "main" },
+    eyebrow: { type: String, default: "" },
+    name: { type: String, default: "" },
+    tagline: { type: String, default: "" },
+    bio: { type: String, default: "" },
+    photo: { type: String, default: "" },
+    focus: { type: Array, default: [] },
+    socials: { type: Object, default: {} }
+  },
+  { timestamps: true, versionKey: false, minimize: false }
+);
+
 module.exports = {
   Project: mongoose.model("Project", projectSchema),
   Admin: mongoose.model("Admin", adminSchema),
   Post: mongoose.model("Post", postSchema),
   Resume: mongoose.model("Resume", resumeSchema),
-  ResumePdf: mongoose.model("ResumePdf", resumePdfSchema)
+  ResumePdf: mongoose.model("ResumePdf", resumePdfSchema),
+  Profile: mongoose.model("Profile", profileSchema)
 };

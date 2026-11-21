@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page not found — Abhay Mittal</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#0b0f19" />
+  <!-- Links start with "/" because this page can be shown at any address, e.g. /some/old/link -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css?v=20261159" />
+</head>
+<body>
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <header class="nav"><div class="container nav__inner">
+    <a href="/index.html" class="nav__logo" aria-label="Abhay Mittal — home">&lt;AM /&gt;</a>
+    <nav class="nav__links" id="navLinks" aria-label="Primary">
+      <a href="/index.html" class="nav__link">Home</a>
+      <a href="/projects.html" class="nav__link">Projects</a>
+      <a href="/blog.html" class="nav__link">Blog</a>
+      <a href="/resume.html" class="nav__link">Resume</a>
+    </nav>
+    <div class="nav__controls">
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div></header>
+
+  <main class="notfound-main"><div class="container page page--enter">
+    <section class="notfound">
+      <p class="notfound__code" aria-hidden="true">4<span>0</span>4</p>
+      <h1 class="notfound__title">Page not found<span class="accent">.</span></h1>
+      <p class="notfound__text">The link may be old or mistyped. Try one of these instead.</p>
+
+      <div class="notfound__term" aria-label="The address you tried doesn't exist">
+        <div class="notfound__bar" aria-hidden="true"><i></i><i></i><i></i><span>terminal</span></div>
+        <pre><span class="t-prompt">abhay@portfolio</span><span class="t-dim">:~$</span> cd <span id="notfoundPath">/</span>
+<span class="t-err">bash: cd: no such file or directory</span>
+<span class="t-prompt">abhay@portfolio</span><span class="t-dim">:~$</span> <span class="t-caret" aria-hidden="true"></span></pre>
+      </div>
+
+      <div class="notfound__actions">
+        <a class="btn btn--primary" href="/index.html"><svg class="icon" viewBox="0 0 24 24"><use href="#i-arrow-left" /></svg> Go home</a>
+        <a class="btn btn--ghost" href="/projects.html">Projects</a>
+        <a class="btn btn--ghost" href="/resume.html">Resume</a>
+      </div>
+    </section>
+  </div></main>
+
+  <footer class="footer"><div class="container footer__inner">
+    <img class="footer__avatar" src="/abhay.png" alt="Abhay Mittal">
+    <div class="footer__socials">
+      <a href="https://github.com/Abhay172005" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg class="icon" viewBox="0 0 24 24"><use href="#i-github" /></svg></a>
+      <a href="https://x.com/abhaymittal2005" target="_blank" rel="noopener noreferrer" aria-label="X"><svg class="icon icon--x" viewBox="0 0 24 24"><use href="#i-x" /></svg></a>
+      <a href="https://www.linkedin.com/in/abhaym17/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg class="icon" viewBox="0 0 24 24"><use href="#i-linkedin" /></svg></a>
+      <a href="mailto:abhaymittal3333@gmail.com" aria-label="Email"><svg class="icon" viewBox="0 0 24 24"><use href="#i-mail" /></svg></a>
+    </div>
+  </div></footer>
+
+  <script>document.getElementById("notfoundPath").textContent = location.pathname + location.search;</script>
+  <script src="/script.js?v=20261158"></script>
+</body>
+</html>
