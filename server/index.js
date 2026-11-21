@@ -6,7 +6,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
-const { Project, Admin, Post } = require("./models");
+const { Project, Admin, Post, Resume, ResumePdf } = require("./models");
+const DEFAULT_RESUME = require("./resume-default");
 const { importRepo, listRepos, GitHubError } = require("./github");
 const { storeImage, uploadStorage, videoUploadSignature, UploadError, MAX_BYTES } = require("./uploads");
 
@@ -248,6 +249,95 @@ app.delete("/api/admin/posts/:id", requireAdmin, async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+/* ---------- Resume ---------- */
+const MAX_PDF_BYTES = 4 * 1024 * 1024;   // Vercel caps requests at 4.5 MB; resumes are usually well under 1 MB
+const RESUME_SECTIONS = ["education", "experience", "certifications", "activities", "skills"];
+
+function cleanResume(body) {
+  const text = (v, max = 300) => String(v ?? "").trim().slice(0, max);
+  const list = (v, max = 40, len = 600) => (Array.isArray(v) ? v.map((s) => text(s, len)).filter(Boolean).slice(0, max) : []);
+  const items = (v, fn) => (Array.isArray(v) ? v.slice(0, 40).map(fn).filter((e) => Object.values(e).some((x) => (Array.isArray(x) ? x.length : x))) : []);
+  const entry = (e = {}) => ({ title: text(e.title), org: text(e.org), date: text(e.date, 80), place: text(e.place, 80) });
+  return {
+    education: items(body.education, (e) => ({ ...entry(e), chips: list(e?.chips, 20, 80) })),
+    experience: items(body.experience, (e) => ({
+      ...entry(e),
+      bullets: list(e?.bullets, 20, 800),
+      links: items(e?.links, (l) => ({ label: text(l?.label, 60), url: text(l?.url, 500) })).filter((l) => l.url)
+    })),
+    certifications: items(body.certifications, (e) => ({ title: text(e?.title), org: text(e?.org) })),
+    activities: items(body.activities, entry),
+    skills: items(body.skills, (s) => ({ label: text(s?.label, 60), items: list(s?.items, 40, 60) }))
+  };
+}
+
+const pick = (doc) => Object.fromEntries(RESUME_SECTIONS.map((k) => [k, doc[k] || []]));
+const pdfInfo = (pdf) => (pdf ? { name: pdf.name, size: pdf.size, updatedAt: pdf.updatedAt } : null);
+const pdfMeta = () => ResumePdf.findOne({ key: "main" }, { data: 0 }).lean();
+
+// Public: the saved resume (null until it's first saved; the page then keeps its built-in content).
+app.get("/api/resume", async (_req, res, next) => {
+  try {
+    const [doc, pdf] = await Promise.all([Resume.findOne({ key: "main" }).lean(), pdfMeta()]);
+    res.json({ resume: doc ? { ...pick(doc), updatedAt: doc.updatedAt } : null, pdf: pdfInfo(pdf) });
+  } catch (error) { next(error); }
+});
+
+app.get("/api/admin/resume", requireAdmin, async (_req, res, next) => {
+  try {
+    const [doc, pdf] = await Promise.all([Resume.findOne({ key: "main" }).lean(), pdfMeta()]);
+    res.json({ resume: doc ? pick(doc) : DEFAULT_RESUME, saved: Boolean(doc), updatedAt: doc?.updatedAt || null, pdf: pdfInfo(pdf) });
+  } catch (error) { next(error); }
+});
+
+app.put("/api/admin/resume", requireAdmin, async (req, res, next) => {
+  try {
+    const doc = await Resume.findOneAndUpdate({ key: "main" }, { $set: cleanResume(req.body) }, { upsert: true, new: true }).lean();
+    res.json({ resume: pick(doc), saved: true, updatedAt: doc.updatedAt });
+  } catch (error) { next(error); }
+});
+
+// Replace the downloadable PDF. Takes effect immediately.
+app.put("/api/admin/resume/pdf", requireAdmin, express.raw({ type: () => true, limit: MAX_PDF_BYTES }), async (req, res, next) => {
+  try {
+    const data = req.body;
+    if (!Buffer.isBuffer(data) || !data.length) return res.status(400).json({ error: "No file was received." });
+    if (data.subarray(0, 5).toString("latin1") !== "%PDF-") return res.status(415).json({ error: "That file isn't a PDF." });
+    let name = String(req.get("X-File-Name") || "Resume.pdf");
+    try { name = decodeURIComponent(name); } catch { /* keep as sent */ }
+    name = name.replace(/[^\p{L}\p{N} ._()-]/gu, "").slice(0, 120) || "Resume.pdf";
+    const pdf = await ResumePdf.findOneAndUpdate({ key: "main" }, { $set: { name, size: data.length, data } }, { upsert: true, new: true, projection: { data: 0 } }).lean();
+    res.json(pdfInfo(pdf));
+  } catch (error) { next(error); }
+});
+
+// Go back to the Resume.pdf that ships with the site.
+app.delete("/api/admin/resume/pdf", requireAdmin, async (_req, res, next) => {
+  try { await ResumePdf.deleteOne({ key: "main" }); res.status(204).end(); } catch (error) { next(error); }
+});
+
+/* The resume PDF everyone downloads: the latest upload, or the site's Resume.pdf if there isn't one.
+   (On Vercel, vercel.json routes /resume.pdf here; locally this runs before the static files.) */
+app.get("/resume.pdf", async (req, res, next) => {
+  // Express matches paths case-insensitively; let /Resume.pdf (the built-in file) through to the static files.
+  if (req.path !== "/resume.pdf") return next();
+  try {
+    await connectDb();
+    const pdf = await ResumePdf.findOne({ key: "main" }).lean();
+    if (!pdf) return res.redirect(302, "/Resume.pdf");
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'inline; filename="Abhay-Mittal-Resume.pdf"',
+      "Cache-Control": "public, max-age=0, must-revalidate",
+      "Last-Modified": new Date(pdf.updatedAt).toUTCString()
+    });
+    res.send(Buffer.from(pdf.data.buffer ?? pdf.data));
+  } catch (error) {
+    console.error("Resume PDF failed:", error.message);
+    res.redirect(302, "/Resume.pdf");   // never leave the download button broken
+  }
+});
+
 // On Vercel the CDN serves public/ and only /api reaches this app; locally Express serves both.
 app.use(express.static(publicDir, { dotfiles: "ignore", index: "index.html" }));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads"), { dotfiles: "ignore" }));
@@ -256,7 +346,10 @@ app.use((error, req, res, _next) => {
   if (error instanceof GitHubError || error instanceof UploadError) return res.status(error.status).json({ error: error.message });
   if (error?.name === "CastError") return res.status(404).json({ error: "Not found." });
   if (error?.type === "entity.too.large") {
-    return res.status(413).json({ error: req.path === "/api/admin/upload" ? `Images must be ${MAX_BYTES / 1048576} MB or smaller.` : "That is too large to save." });
+    const message = req.path === "/api/admin/upload" ? `Images must be ${MAX_BYTES / 1048576} MB or smaller.`
+      : req.path === "/api/admin/resume/pdf" ? `The PDF must be ${MAX_PDF_BYTES / 1048576} MB or smaller.`
+      : "That is too large to save.";
+    return res.status(413).json({ error: message });
   }
   console.error(error);
   res.status(500).json({ error: "Something went wrong. Please try again." });

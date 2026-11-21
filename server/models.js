@@ -43,8 +43,36 @@ const postSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
+/* The resume page's content: one document (key "main"). Entries are plain objects; server/index.js
+   cleans them before saving. */
+const resumeSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, unique: true, default: "main" },
+    education: { type: Array, default: [] },
+    experience: { type: Array, default: [] },
+    certifications: { type: Array, default: [] },
+    activities: { type: Array, default: [] },
+    skills: { type: Array, default: [] }
+  },
+  { timestamps: true, versionKey: false, minimize: false }
+);
+
+/* The uploaded resume PDF (one document, key "main"), kept apart so loading the resume text doesn't
+   also load the file. Without one, /resume.pdf serves the Resume.pdf shipped with the site. */
+const resumePdfSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, unique: true, default: "main" },
+    name: { type: String, default: "Resume.pdf" },
+    size: { type: Number, default: 0 },
+    data: { type: Buffer, required: true }
+  },
+  { timestamps: true, versionKey: false }
+);
+
 module.exports = {
   Project: mongoose.model("Project", projectSchema),
   Admin: mongoose.model("Admin", adminSchema),
-  Post: mongoose.model("Post", postSchema)
+  Post: mongoose.model("Post", postSchema),
+  Resume: mongoose.model("Resume", resumeSchema),
+  ResumePdf: mongoose.model("ResumePdf", resumePdfSchema)
 };

@@ -26,7 +26,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20261153" />
+  <link rel="stylesheet" href="style.css?v=20261154" />
 </head>
 
 <body>
@@ -58,11 +58,13 @@
       <div class="section__head resume__head">
         <h1 class="section__title">Resume</h1>
         <span class="section__rule"></span>
-        <a class="btn btn--primary" href="Resume.pdf" target="_blank" rel="noopener noreferrer">
+        <a class="btn btn--primary" href="resume.pdf" target="_blank" rel="noopener noreferrer">
           <svg class="icon" viewBox="0 0 24 24"><use href="#i-download" /></svg> PDF Resume
         </a>
       </div>
 
+      <!-- Built-in resume, shown until the dashboard's saved version loads (script.js replaces #resumeBody). -->
+      <div id="resumeBody">
       <!-- Education -->
       <section class="rsec">
         <div class="section__head">
@@ -229,6 +231,7 @@
           </div>
         </div>
       </section>
+      </div>
 
     </div>
   </main>
@@ -249,7 +252,7 @@
     </div>
   </footer>
 
-  <script src="script.js?v=20261153"></script>
+  <script src="script.js?v=20261154"></script>
 </body>
 
 </html>

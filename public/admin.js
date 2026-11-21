@@ -433,7 +433,7 @@
   /* ---------- Views & routing ---------- */
   const loginView = qs("#loginView");
   const dashboardView = qs("#dashboardView");
-  const panels = ["#projectsPanel", "#blogPanel", "#projectEditor", "#postEditor"].map((s) => qs(s));
+  const panels = ["#projectsPanel", "#blogPanel", "#resumePanel", "#projectEditor", "#postEditor"].map((s) => qs(s));
   let currentRoute = "";
   let ignoreNextHash = false;
 
@@ -449,9 +449,14 @@
   async function enterDashboard(email) {
     state.email = email;
     qs("#whoami").textContent = `Signed in as ${email}`;
-    const [projects, posts] = await Promise.all([api("/api/admin/projects"), api("/api/admin/posts")]);
+    const [projects, posts, resume] = await Promise.all([
+      api("/api/admin/projects"),
+      api("/api/admin/posts"),
+      api("/api/admin/resume").catch(() => null)
+    ]);
     state.projects = projects;
     state.posts = posts;
+    state.resume = resume;
     state.ready = true;
     api("/api/admin/upload-status").then((s) => { state.storage = s.storage; }).catch(() => {});
     loginView.hidden = true;
@@ -474,7 +479,7 @@
     setDirty(false);
     currentRoute = `#${hash}`;
     const [kind, id] = hash.split("/");
-    const tab = kind === "blog" || kind === "post" ? "blog" : "projects";
+    const tab = kind === "blog" || kind === "post" ? "blog" : kind === "resume" ? "resume" : "projects";
     qsa(".tab").forEach((t) => {
       const active = t.dataset.tab === tab;
       t.classList.toggle("is-active", active);
@@ -489,6 +494,7 @@
     if (kind === "project") openProjectEditor(id || "new");
     else if (kind === "post") openPostEditor(id || "new");
     else if (kind === "blog") qs("#blogPanel").hidden = false;
+    else if (kind === "resume") openResume();
     else qs("#projectsPanel").hidden = false;
     if (inEditor) window.scrollTo({ top: 0 });
   }
@@ -1122,6 +1128,323 @@
   }
   qs(".seg").addEventListener("click", (e) => { const mode = e.target.closest("[data-mode]")?.dataset.mode; if (mode) setMode(mode); });
   try { const saved = localStorage.getItem("admin.writerMode"); if (saved) setMode(saved); } catch { /* storage unavailable */ }
+
+  /* ---------- Resume ---------- */
+  // Each section is a list of entries; each field is a text box, a one-per-line list, tags or links.
+  const RESUME_SECTIONS = [
+    {
+      key: "education", title: "Education", icon: "a-text", add: "Add education", blank: "New education entry",
+      desc: "Schools and degrees, newest first.",
+      fields: [
+        { name: "title", label: "School", placeholder: "SRM Institute of Science and Technology" },
+        { name: "org", label: "Degree", placeholder: "B.Tech in Computer Science and Engineering" },
+        { name: "date", label: "Dates", placeholder: "Expected May 2028", half: true },
+        { name: "place", label: "Location", placeholder: "Chennai, India", half: true, hint: "Optional" },
+        { name: "chips", label: "Courses", type: "tags", placeholder: "Add a course and press Enter", hint: "Optional" }
+      ]
+    },
+    {
+      key: "experience", title: "Technical experience", icon: "i-code", add: "Add experience", blank: "New role",
+      desc: "Internships, jobs and research, newest first.",
+      fields: [
+        { name: "title", label: "Role", placeholder: "Deep Learning Intern — Video Deepfake Detection" },
+        { name: "org", label: "Organisation", placeholder: "Computer Vision & Biometrics Lab (CVBL), IIIT Allahabad" },
+        { name: "date", label: "Dates", placeholder: "June 2026", half: true },
+        { name: "place", label: "Location", placeholder: "Leave empty for remote", half: true, hint: "Optional" },
+        { name: "bullets", label: "What you did", type: "lines", placeholder: "Built a … reaching **0.91 ROC-AUC**.", help: "One point per line. Wrap words in **double stars** to make them bold." },
+        { name: "links", label: "Links", type: "links", hint: "Optional" }
+      ]
+    },
+    {
+      key: "certifications", title: "Certifications", icon: "i-award", add: "Add certification", blank: "New certification",
+      desc: "Shown as cards in a grid.",
+      fields: [
+        { name: "title", label: "Certificate", placeholder: "SAP Generative AI Developer" },
+        { name: "org", label: "Issuer and details", placeholder: "SAP Certified" }
+      ]
+    },
+    {
+      key: "activities", title: "Activities", icon: "a-sparkle", add: "Add activity", blank: "New activity",
+      desc: "Clubs, volunteering and leadership.",
+      fields: [
+        { name: "title", label: "Role", placeholder: "Corporate Member" },
+        { name: "org", label: "Club or organisation", placeholder: "FOSS Club — SRMIST" },
+        { name: "date", label: "Dates", placeholder: "2025 – present", half: true, hint: "Optional" },
+        { name: "place", label: "Location", placeholder: "Chennai, India", half: true, hint: "Optional" }
+      ]
+    },
+    {
+      key: "skills", title: "Technical skills", icon: "a-layers", add: "Add skill group", blank: "New skill group",
+      desc: "Groups of skills. Popular tools get their logo automatically.",
+      fields: [
+        { name: "label", label: "Group", placeholder: "Languages" },
+        { name: "items", label: "Skills", type: "tags", placeholder: "Add a skill and press Enter" }
+      ]
+    }
+  ];
+
+  function linksField(wrap, links, onChange) {
+    const rows = document.createElement("div");
+    rows.className = "rep-links";
+    const add = (link = {}) => {
+      const row = document.createElement("div");
+      row.className = "rep-links__row";
+      row.innerHTML = `<input aria-label="Link label" placeholder="Label, e.g. Source" autocomplete="off" />
+        <input aria-label="Link address" placeholder="https://… or project.html?p=…" autocomplete="off" />
+        <button type="button" class="icon-btn danger" aria-label="Remove link" title="Remove link">${icon("a-x")}</button>`;
+      const [label, url] = qsa("input", row);
+      label.value = link.label || "";
+      url.value = link.url || "";
+      qs("button", row).addEventListener("click", () => { row.remove(); onChange(); });
+      rows.append(row);
+      return row;
+    };
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "link-btn rep-links__add";
+    addBtn.innerHTML = `${icon("a-plus")} Add link`;
+    addBtn.addEventListener("click", () => { qs("input", add()).focus(); onChange(); });
+    (links || []).forEach(add);
+    wrap.append(rows, addBtn);
+    return () => qsa(".rep-links__row", rows)
+      .map((r) => { const [label, url] = qsa("input", r); return { label: label.value.trim(), url: url.value.trim() }; })
+      .filter((l) => l.url);
+  }
+
+  function createRepeater(section, onChange) {
+    const group = document.createElement("section");
+    group.className = "card group";
+    group.innerHTML = `
+      <header class="group__head">
+        <span class="group__icon">${icon(section.icon)}</span>
+        <div><h3 class="group__title">${esc(section.title)}</h3><p class="group__desc">${esc(section.desc)}</p></div>
+      </header>
+      <div class="rep__items"></div>
+      <button type="button" class="list-editor__add">${icon("a-plus")} ${esc(section.add)}</button>`;
+    const list = qs(".rep__items", group);
+    const getters = new Map();   // entry element → function returning its data
+
+    function entry(data = {}) {
+      const el = document.createElement("div");
+      el.className = "rep__item";
+      el.innerHTML = `
+        <span class="rep__tools">
+          <button type="button" class="icon-btn" data-act="up" aria-label="Move up" title="Move up">${icon("a-left")}</button>
+          <button type="button" class="icon-btn" data-act="down" aria-label="Move down" title="Move down">${icon("a-right")}</button>
+          <button type="button" class="icon-btn danger" data-act="remove" aria-label="Remove" title="Remove">${icon("a-trash")}</button>
+        </span>
+        <div class="rep__body"></div>`;
+      const body = qs(".rep__body", el);
+      const fields = {};
+      let pair = null;   // a two-column row for half-width fields
+      for (const f of section.fields) {
+        const wrap = document.createElement(f.type === "tags" || f.type === "links" ? "div" : "label");
+        wrap.className = "field";
+        wrap.innerHTML = `<span class="field__label">${esc(f.label)}${f.hint ? `<span class="field__hint">${esc(f.hint)}</span>` : ""}</span>`;
+        if (f.type === "lines") {
+          const ta = document.createElement("textarea");
+          ta.rows = 3;
+          ta.dataset.autogrow = "";
+          ta.placeholder = f.placeholder || "";
+          ta.value = (data[f.name] || []).join("\n");
+          wrap.append(ta);
+          fields[f.name] = () => lines(ta.value);
+        } else if (f.type === "tags") {
+          const box = document.createElement("div");
+          box.className = "tags";
+          box.innerHTML = `<div class="tags__list"></div><input type="text" placeholder="${esc(f.placeholder || "")}" aria-label="${esc(f.label)}" />`;
+          wrap.append(box);
+          const tags = createTagInput(box, onChange);
+          tags.set(data[f.name] || []);
+          fields[f.name] = tags.get;
+        } else if (f.type === "links") {
+          fields[f.name] = linksField(wrap, data[f.name], onChange);
+        } else {
+          const input = document.createElement("input");
+          input.autocomplete = "off";
+          input.placeholder = f.placeholder || "";
+          input.value = data[f.name] || "";
+          wrap.append(input);
+          fields[f.name] = () => input.value.trim();
+        }
+        if (f.help) wrap.insertAdjacentHTML("beforeend", `<span class="field__help">${esc(f.help)}</span>`);
+        if (f.half) {
+          if (!pair) { pair = document.createElement("div"); pair.className = "two"; body.append(pair); }
+          pair.append(wrap);
+          if (pair.children.length === 2) pair = null;
+        } else {
+          pair = null;
+          body.append(wrap);
+        }
+      }
+      el.dataset.label = section.fields[0].name;   // the field that names this entry (used when removing it)
+      getters.set(el, () => Object.fromEntries(Object.entries(fields).map(([k, get]) => [k, get()])));
+      return el;
+    }
+
+    const refreshTools = () => {
+      const items = [...list.children];
+      items.forEach((el, i) => {
+        qs('[data-act="up"]', el).disabled = i === 0;
+        qs('[data-act="down"]', el).disabled = i === items.length - 1;
+      });
+    };
+
+    list.addEventListener("click", (e) => {
+      const button = e.target.closest("[data-act]");
+      if (!button) return;
+      const el = button.closest(".rep__item");
+      const act = button.dataset.act;
+      if (act === "up" && el.previousElementSibling) el.previousElementSibling.before(el);
+      else if (act === "down" && el.nextElementSibling) el.nextElementSibling.after(el);
+      else if (act === "remove") {
+        const label = getters.get(el)?.()[el.dataset.label] || section.blank.toLowerCase();
+        if (!confirm(`Remove “${label}”? It's only gone for good once you save.`)) return;
+        getters.delete(el);
+        el.remove();
+      }
+      refreshTools();
+      onChange();
+    });
+    group.addEventListener("input", onChange);
+    qs(".list-editor__add", group).addEventListener("click", () => {
+      const el = entry();
+      list.append(el);
+      refreshTools();
+      onChange();
+      qs("input, textarea", el)?.focus();
+    });
+
+    return {
+      el: group,
+      set(items) {
+        getters.clear();
+        list.replaceChildren(...(items || []).map(entry));
+        refreshTools();
+        requestAnimationFrame(() => growAll(list));
+      },
+      get: () => [...list.children].map((el) => getters.get(el)?.()).filter(Boolean)
+    };
+  }
+
+  const resumeEditors = RESUME_SECTIONS.map((section) => ({ key: section.key, ...createRepeater(section, () => setDirty(true)) }));
+  qs("#resumeSections").replaceChildren(...resumeEditors.map((r) => r.el));
+
+  function renderResumeHint() {
+    const r = state.resume;
+    qs("#resumeHint").textContent = !r
+      ? "Couldn't load the resume. Refresh the page to try again."
+      : r.saved
+        ? `Last saved ${formatDate(r.updatedAt)}. Changes appear on your resume page after you save.`
+        : "This is your current resume. Edit anything and press Save; from then on it's managed here.";
+  }
+
+  function renderPdf() {
+    const pdf = state.resume?.pdf;
+    qs("#pdfName").textContent = pdf ? pdf.name : "Resume.pdf";
+    qs("#pdfMeta").textContent = pdf
+      ? `${Math.max(1, Math.round(pdf.size / 1024))} KB · uploaded ${formatDate(pdf.updatedAt)}`
+      : "The original PDF that ships with the site";
+    qs("#pdfOpen").href = `resume.pdf?v=${pdf ? new Date(pdf.updatedAt).getTime() : "original"}`;
+    qs("#pdfReset").hidden = !pdf;
+  }
+
+  function openResume() {
+    qs("#resumePanel").hidden = false;
+    resumeEditors.forEach((r) => r.set(state.resume?.resume?.[r.key] || []));
+    renderResumeHint();
+    renderPdf();
+    setDirty(false);
+  }
+
+  qs("#saveResume").addEventListener("click", async () => {
+    const button = qs("#saveResume");
+    busy(button, true);
+    try {
+      const body = Object.fromEntries(resumeEditors.map((r) => [r.key, r.get()]));
+      const saved = await api("/api/admin/resume", { method: "PUT", body });
+      state.resume = { ...state.resume, ...saved };
+      setDirty(false);
+      renderResumeHint();
+      toast("Resume saved.");
+    } catch (error) {
+      toast(error.message, true);
+    } finally {
+      busy(button, false);
+    }
+  });
+
+  /* Resume PDF: uploaded through this server (it's small) and stored in the database. */
+  (function pdfUploader() {
+    const root = qs("#pdfDrop");
+    const file = qs(".dropzone__file", root);
+    const area = qs(".dropzone__area", root);
+    const progress = qs(".dropzone__progress", root);
+    const note = qs(".dropzone__note", root);
+    const setNote = (text = "", tone = "") => { note.textContent = text; note.className = `dropzone__note ${tone}`.trim(); };
+    const MAX_PDF_BYTES = 4 * 1024 * 1024;
+    let uploading = false;
+
+    async function upload(pdf) {
+      if (uploading || !pdf) return;
+      if (pdf.type !== "application/pdf" && !/\.pdf$/i.test(pdf.name)) return setNote("Choose a PDF file.", "error");
+      if (pdf.size > MAX_PDF_BYTES) return setNote(`That PDF is ${(pdf.size / 1048576).toFixed(1)} MB. The limit is 4 MB.`, "error");
+      if (!confirm(`Replace the resume PDF on your site with “${pdf.name}”? Visitors get the new one straight away.`)) return;
+      uploading = true;
+      root.classList.add("is-uploading");
+      progress.hidden = false;
+      setNote(`Uploading ${pdf.name}…`);
+      try {
+        let res;
+        try {
+          res = await fetch("/api/admin/resume/pdf", {
+            method: "PUT",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/pdf", "X-File-Name": encodeURIComponent(pdf.name) },
+            body: pdf
+          });
+        } catch { throw new Error("Upload failed. Check your connection."); }
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) showLogin("Your session expired. Sign in again.");
+        if (!res.ok) throw new Error(data.error || "Upload failed.");
+        state.resume = { ...state.resume, pdf: data };
+        renderPdf();
+        setNote("Replaced. The PDF Resume button now downloads this file.");
+        toast("Resume PDF replaced.");
+      } catch (error) {
+        setNote(error.message, "error");
+      } finally {
+        uploading = false;
+        root.classList.remove("is-uploading");
+        progress.hidden = true;
+        file.value = "";
+      }
+    }
+
+    const browse = () => { if (!uploading) file.click(); };
+    area.addEventListener("click", browse);
+    area.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); browse(); } });
+    file.addEventListener("change", () => upload(file.files[0]));
+    ["dragenter", "dragover"].forEach((type) => area.addEventListener(type, (e) => { e.preventDefault(); root.classList.add("is-over"); }));
+    ["dragleave", "dragend"].forEach((type) => area.addEventListener(type, () => root.classList.remove("is-over")));
+    area.addEventListener("drop", (e) => {
+      e.preventDefault();
+      root.classList.remove("is-over");
+      upload(e.dataTransfer.files[0]);
+    });
+
+    qs("#pdfReset").addEventListener("click", async () => {
+      if (!confirm("Remove the uploaded PDF and go back to the original Resume.pdf that ships with the site?")) return;
+      try {
+        await api("/api/admin/resume/pdf", { method: "DELETE" });
+        state.resume = { ...state.resume, pdf: null };
+        renderPdf();
+        setNote("Back to the original PDF.");
+      } catch (error) {
+        setNote(error.message, "error");
+      }
+    });
+  })();
 
   /* ---------- Start ---------- */
   (async function boot() {

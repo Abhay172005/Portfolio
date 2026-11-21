@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=20261153" />
-  <link rel="stylesheet" href="admin.css?v=20261153" />
+  <link rel="stylesheet" href="style.css?v=20261154" />
+  <link rel="stylesheet" href="admin.css?v=20261156" />
 </head>
 <body class="admin">
   <!-- Admin-only icons (the shared sprite comes from script.js) -->
@@ -104,6 +104,7 @@
         <nav class="tabs" aria-label="Content type">
           <a class="tab" href="#projects" data-tab="projects">Projects <span class="tab__count" id="tabProjects"></span></a>
           <a class="tab" href="#blog" data-tab="blog">Blog <span class="tab__count" id="tabPosts"></span></a>
+          <a class="tab" href="#resume" data-tab="resume">Resume</a>
         </nav>
 
         <!-- Projects list -->
@@ -122,6 +123,51 @@
             <a class="btn btn--primary" href="#post/new"><svg class="icon"><use href="#a-plus" /></svg> New post</a>
           </div>
           <div class="post-list" id="adminPosts"></div>
+        </section>
+
+        <!-- Resume -->
+        <section id="resumePanel" class="panel" hidden>
+          <p class="hint resume-hint" id="resumeHint"></p>
+          <div class="resume-bar">
+            <span class="dirty-flag" hidden>Unsaved changes</span>
+            <a class="btn btn--ghost" href="resume.html" target="_blank" rel="noopener"><svg class="icon"><use href="#i-arrow" /></svg> View page</a>
+            <button class="btn btn--primary" type="button" id="saveResume"><svg class="icon"><use href="#a-check" /></svg> Save resume</button>
+          </div>
+
+          <div class="resume-editor">
+            <section class="card group" aria-labelledby="groupPdf">
+              <header class="group__head">
+                <span class="group__icon"><svg class="icon" viewBox="0 0 24 24"><use href="#i-download" /></svg></span>
+                <div>
+                  <h3 class="group__title" id="groupPdf">Resume PDF</h3>
+                  <p class="group__desc">What the “PDF Resume” button downloads. Uploading a new one replaces it on the site straight away; you don't need to press Save.</p>
+                </div>
+              </header>
+              <div class="pdf-row">
+                <span class="pdf-row__badge">PDF</span>
+                <div class="pdf-row__text"><strong id="pdfName"></strong><small id="pdfMeta"></small></div>
+                <a class="btn btn--ghost" id="pdfOpen" href="resume.pdf" target="_blank" rel="noopener">Open</a>
+              </div>
+              <div class="dropzone dropzone--pdf" id="pdfDrop">
+                <input type="file" class="dropzone__file" accept="application/pdf,.pdf" hidden />
+                <div class="dropzone__area" tabindex="0" role="button" aria-label="Upload a new resume PDF">
+                  <div class="dropzone__empty">
+                    <span class="dropzone__icon"><svg class="icon"><use href="#a-upload" /></svg></span>
+                    <strong>Drop your new resume PDF here, or <span class="accent">browse</span></strong>
+                    <small>PDF, up to 4 MB. It replaces the current one.</small>
+                  </div>
+                  <div class="dropzone__progress" hidden><span></span></div>
+                </div>
+                <div class="dropzone__bar">
+                  <span class="dropzone__note" aria-live="polite"></span>
+                  <span class="dropzone__actions">
+                    <button type="button" class="link-btn link-btn--danger" id="pdfReset" hidden>Go back to the original PDF</button>
+                  </span>
+                </div>
+              </div>
+            </section>
+            <div id="resumeSections" class="resume-editor"></div>
+          </div>
         </section>
 
         <!-- Project editor -->
@@ -426,7 +472,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="markdown.js?v=20261121"></script>
-  <script src="script.js?v=20261153"></script>
-  <script src="admin.js?v=20261153"></script>
+  <script src="script.js?v=20261154"></script>
+  <script src="admin.js?v=20261156"></script>
 </body>
 </html>

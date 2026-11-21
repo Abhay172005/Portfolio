@@ -405,6 +405,64 @@ function postCard(p) {
   }
 })();
 
+/* ---------- Resume (resume.html) ----------
+   The page ships with the resume written into its HTML. Once a version is saved in the dashboard,
+   that one replaces it, built with the same markup so it looks the same. **text** shows in bold. */
+function renderResume(r) {
+  const body = $("#resumeBody");
+  const bold = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  const meta = (e) => (e.date || e.place
+    ? `<div class="entry__meta">${e.date ? `<p class="entry__date">${esc(e.date)}</p>` : ""}${e.place ? `<p class="entry__place">${icon("i-pin")} ${esc(e.place)}</p>` : ""}</div>`
+    : "");
+  const head = (e, flush) => `<div class="entry__head${flush ? " entry__head--flush" : ""}">
+      <div><h3 class="entry__title">${esc(e.title)}</h3>${e.org ? `<p class="entry__org">${esc(e.org)}</p>` : ""}</div>${meta(e)}</div>`;
+  const link = (l) => {
+    const external = /^https?:/i.test(l.url);
+    return `<a href="${esc(l.url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ""}>${icon(/github\.com/i.test(l.url) ? "i-github" : "i-arrow")} ${esc(l.label || "Link")}</a>`;
+  };
+  const section = (title, inner) => (inner
+    ? `<section class="rsec"><div class="section__head"><h2 class="section__title">${title}</h2><span class="section__rule"></span></div>${inner}</section>`
+    : "");
+  const stack = (items) => (items.length ? `<div class="rstack">${items.join("")}</div>` : "");
+
+  const education = (r.education || []).map((e) => {
+    const chips = e.chips?.length ? `<div class="chips chips--sm">${e.chips.map((c) => `<span class="chip">${esc(c)}</span>`).join("")}</div>` : "";
+    return `<div class="card">${head(e, !chips)}${chips}</div>`;
+  });
+  const experience = (r.experience || []).map((e) => {
+    const bullets = e.bullets?.length ? `<ul class="bullets">${e.bullets.map((b) => `<li>${bold(b)}</li>`).join("")}</ul>` : "";
+    const links = e.links?.length ? `<div class="entry__links">${e.links.map(link).join("")}</div>` : "";
+    return `<div class="timeline__item reveal"><div class="card">${head(e, !bullets && !links)}${bullets}${links}</div></div>`;
+  });
+  const certs = (r.certifications || []).map((c) => `
+    <article class="card cert reveal"><span class="cert__icon">${icon("i-award")}</span>
+      <h3 class="entry__title">${esc(c.title)}</h3>${c.org ? `<p class="entry__org">${esc(c.org)}</p>` : ""}</article>`);
+  const activities = (r.activities || []).map((e) => `<div class="card reveal">${head(e, true)}</div>`);
+  const skills = (r.skills || []).map((g) => `
+    <div><h3 class="skillgrid__label">${esc(g.label)}</h3><div class="chips chips--sm">${(g.items || []).map(chip).join("")}</div></div>`);
+
+  body.innerHTML = [
+    section("Education", stack(education)),
+    section("Technical Experience", experience.length ? `<div class="timeline">${experience.join("")}</div>` : ""),
+    section("Certifications", certs.length ? `<div class="certs">${certs.join("")}</div>` : ""),
+    section("Activities", stack(activities)),
+    section("Technical Skills", skills.length ? `<div class="skillgrid">${skills.join("")}</div>` : "")
+  ].join("");
+  reveal(body);
+}
+
+(async function loadResume() {
+  if (!$("#resumeBody")) return;
+  try {
+    const res = await fetch("/api/resume", { headers: { Accept: "application/json" } });
+    if (!res.ok) return;
+    const { resume } = await res.json();
+    if (resume) renderResume(resume);
+  } catch {
+    // Without the API (e.g. static hosting) the built-in resume stays.
+  }
+})();
+
 /* ---------- Mobile nav ---------- */
 const navToggle = $("#navToggle");
 const navLinks = $("#navLinks");

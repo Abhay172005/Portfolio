@@ -858,6 +858,12 @@ main {
   margin-bottom: 48px;
 }
 
+/* Several education / activity entries stack with a gap (the resume page builds these from saved data). */
+.rstack {
+  display: grid;
+  gap: 16px;
+}
+
 .entry__head--flush {
   margin-bottom: 0;
 }
